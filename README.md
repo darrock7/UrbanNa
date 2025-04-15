@@ -1,6 +1,6 @@
 # UrbanNa
 
-*** Our Goal ***
+## Our Goal 
 
 UrbanNa aims to simplify and accelerate the process of reporting and resolving urban infrastructure
 issues by creating a centralized platform where citizens can easily document problems while providing
@@ -9,7 +9,7 @@ system will help users identify and report issues like potholes, broken streetli
 urban infrastructure problems, track the status of their reports, and visualize problem patterns across their
 community.
 
-*** Technical Approach ***
+## Technical Approach 
 1. Frontend: A cross-platform framework (e.g., Flutter, React Native) in order to reach more users
 2. Backend: Node.js with Express
 3. Database: A NoSQL database (e.g., MongoDB)
