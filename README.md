@@ -16,9 +16,10 @@ community.
 4. Machine Learning: Simple ML model to validate images according to severity
 
 # Repo Format
-  helpers      
-  models       
-  providers    
-  screens      
-  views        
+1. helpers      
+2. models       
+3. providers    
+4. screens      
+5. views
+         
 We will have a few folders that will be designated to help maintain the structure of the app. This will include the providers, which will manage the state of the current app, the models folder to define the data structures shared across different components, and the helpers directory, which will contain utility functions and overall logic we need to develop. The screens folder will store the different user interface pages of the app like Home, Settings, Report Issue Screen while the views directory will include smaller, modular widgets used within those screens like the map display.
