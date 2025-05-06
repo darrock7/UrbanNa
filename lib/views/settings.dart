@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-class AboutView extends StatelessWidget {
+class SettingsView extends StatelessWidget {
 
-  const AboutView( {super.key});
+  const SettingsView ({super.key});
   
 
   @override
