@@ -60,4 +60,35 @@ void main() {
     findsOneWidget);
     expect(find.text('Version: 1.0.0'), findsOneWidget);
   });
+
+  testWidgets('Tab navigation works correctly', (WidgetTester tester) async {
+  await tester.pumpWidget(const MyApp());
+
+  // Initially, the MapView should be displayed
+  expect(find.byType(MapView), findsOneWidget);
+  expect(find.byType(ProfileView), findsNothing);
+  expect(find.byType(AboutView), findsNothing);
+
+  // Tap the Profile tab and verify ProfileView is displayed
+  await tester.tap(find.text('Profile'));
+  await tester.pumpAndSettle();
+  expect(find.byType(ProfileView), findsOneWidget);
+  expect(find.byType(MapView), findsNothing);
+  expect(find.byType(AboutView), findsNothing);
+
+  // Tap the About tab and verify AboutView is displayed
+  await tester.tap(find.text('About'));
+  await tester.pumpAndSettle();
+  expect(find.byType(AboutView), findsOneWidget);
+  expect(find.byType(ProfileView), findsNothing);
+  expect(find.byType(MapView), findsNothing);
+
+  // Tap the Map tab and verify MapView is displayed again
+  await tester.tap(find.text('Map'));
+  await tester.pumpAndSettle();
+  expect(find.byType(MapView), findsOneWidget);
+  expect(find.byType(ProfileView), findsNothing);
+  expect(find.byType(AboutView), findsNothing);
+});
+
 }
