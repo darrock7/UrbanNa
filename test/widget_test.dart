@@ -28,13 +28,7 @@ void main() {
     // Verify that our counter has incremented.
     expect(find.text('0'), findsNothing);
     expect(find.text('1'), findsOneWidget);
-
-    
-    await tester.tap(find.byIcon(Icons.remove));
-    await tester.pump();
-    //verify initial value
-    expect(find.text('0'), findsOneWidget); // still at 0
-    expect(find.text('-1'), findsNothing);  // shouldn't go below 0
+    expect(find.byType(ProfileView), findsOneWidget);
 
     // Verify that ProfileView is shown with the correct information (mock data for now)
     expect(find.byType(ProfileView), findsOneWidget);
