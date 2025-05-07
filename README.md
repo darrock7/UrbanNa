@@ -1,5 +1,7 @@
 # UrbanNa
 
+![CI](https://github.com/darrock7/UrbanNa/actions/workflows/flutter.yml/badge.svg)
+
 ## Our Goal 
 
 UrbanNa aims to simplify and accelerate the process of reporting and resolving urban infrastructure
@@ -26,3 +28,10 @@ We will have a few folders that will be designated to help maintain the structur
 
 ## Weekly Status Report
 Weekly Status Report can be found [here](https://docs.google.com/document/d/10sjFqyLY74quO8Lj4e5b28xgHaAJKX6YRBoEvSDAfjE/edit?usp=sharing)
+
+## Running Tests
+
+To run tests locally, use the following command:
+
+```bash
+flutter test
