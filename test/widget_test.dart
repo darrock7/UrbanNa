@@ -9,22 +9,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:urbanna/main.dart';
+import 'package:urbanna/views/map.dart';
+import 'package:urbanna/views/profile.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('Profile tab shows correct content', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Checks that the initial state of the app is the MapView
+    expect(find.byType(MapView), findsOneWidget);
+    expect(find.byType(ProfileView), findsNothing);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // After tapping the Profile tab, it should show the ProfileView, sync it up
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that ProfileView is shown with the correct information (mock data for now)
+    expect(find.byType(ProfileView), findsOneWidget);
+    expect(find.text('John Smith'), findsOneWidget);
+    expect(find.text('johnsmith@uw.edu'), findsOneWidget);
   });
 }
