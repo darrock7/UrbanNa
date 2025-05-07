@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:urbanna/main.dart';
+import 'package:urbanna/views/about.dart';
 import 'package:urbanna/views/map.dart';
 import 'package:urbanna/views/profile.dart';
 
@@ -39,5 +40,25 @@ void main() {
     expect(find.byType(ProfileView), findsOneWidget);
     expect(find.text('John Smith'), findsOneWidget);
     expect(find.text('johnsmith@uw.edu'), findsOneWidget);
+  });
+
+  testWidgets('About tab shows correct content', (WidgetTester tester) async {
+    await tester.pumpWidget(const MyApp());
+
+    // Makes sure the app's initial state is the MapView
+    expect(find.byType(MapView), findsOneWidget);
+    expect(find.byType(AboutView), findsNothing);
+
+    // Taps the About tab
+    await tester.tap(find.text('About'));
+    await tester.pumpAndSettle();
+    // Checks that the app is directed to show the AboutView
+    expect(find.byType(AboutView), findsOneWidget);
+    
+    // Verify that the content shown in AboutView is correct
+    expect(find.text('Description: UrbanNa is a mobile application that helps'
+    ' users find and connect with local services and businesses'), 
+    findsOneWidget);
+    expect(find.text('Version: 1.0.0'), findsOneWidget);
   });
 }
