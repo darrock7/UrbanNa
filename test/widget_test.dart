@@ -56,8 +56,7 @@ void main() {
     expect(find.byType(AboutView), findsOneWidget);
     
     // Verify that the content shown in AboutView is correct
-    expect(find.text('Description: UrbanNa is a mobile application that helps'
-    ' users find and connect with local services and businesses'), 
+    expect(find.text('Description: UrbanNa is a mobile application that helps users find and connect with local services and businesses.'), 
     findsOneWidget);
     expect(find.text('Version: 1.0.0'), findsOneWidget);
   });
