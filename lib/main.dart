@@ -3,6 +3,9 @@ import 'package:urbanna/views/profile.dart';
 import 'package:urbanna/views/about.dart';
 import 'package:urbanna/views/settings.dart';
 import 'package:urbanna/views/map.dart';
+import 'package:urbanna/views/submit_alert.dart';
+import 'package:http/http.dart' as http;
+
 void main() {
   runApp(const MyApp());
 }
@@ -66,7 +69,20 @@ class _MyHomePageState extends State<MyHomePage> {
       3 => const SettingsView(),
       _ => const Placeholder(),
     },
-    )
+    ),
+    floatingActionButton: _currTabIndex == 0
+    ? FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SubmitAlertView()),
+          );
+        },
+        tooltip: 'Submit Alert',
+        child: const Icon(Icons.add),
+      )
+    : null,
+
     );
   }
 }
