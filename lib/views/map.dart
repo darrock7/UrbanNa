@@ -4,32 +4,47 @@ import 'package:latlong2/latlong.dart';
 import 'package:urbanna/providers/report_provider.dart';
 import 'package:provider/provider.dart';
 
-class MapView extends StatelessWidget {
+class MapView extends StatefulWidget {
   const MapView({super.key});
+
+  @override
+  State<MapView> createState() => _MapViewState();
+}
+
+class _MapViewState extends State<MapView> {
+  late Future<void> _loadFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFuture = Provider.of<ReportProvider>(context, listen: false).loadReports();
+  }
 
   @override
   Widget build(BuildContext context) {
     final reportProvider = Provider.of<ReportProvider>(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Map View'),
-      ),
-      body: FutureBuilder(
-        future: reportProvider.loadReports(), 
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return FutureBuilder(
+      future: _loadFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(child: Text('Error: ${snapshot.error}')),
+          );
+        }
 
-          return FlutterMap(
+        return Scaffold(
+          appBar: AppBar(title: const Text('Map View')),
+          body: FlutterMap(
             options: MapOptions(
-              initialCenter: LatLng(47.6062, -122.3321), // Seattle, WA
-              initialZoom: 10.0,
+              initialCenter: LatLng(47.6062, -122.3321),
+              initialZoom: 10,
             ),
             children: [
               TileLayer(
@@ -38,29 +53,23 @@ class MapView extends StatelessWidget {
                 userAgentPackageName: 'com.example.urbanna',
                 retinaMode: RetinaMode.isHighDensity(context),
               ),
-              // MarkerLayer to display the reports ongoing reports on the map 
               MarkerLayer(
                 markers: reportProvider.reports.map((report) {
-                  final locationSplit = report.location.split(',');
-                  final latitude = double.tryParse(locationSplit[0]) ?? 0.0;
-                  final longitude = double.tryParse(locationSplit[1]) ?? 0.0;
-                  final reportLocation = LatLng(latitude, longitude);
+                  final parts = report.location.split(',');
+                  final lat = double.tryParse(parts[0]) ?? 0.0;
+                  final lng = double.tryParse(parts[1]) ?? 0.0;
                   return Marker(
-                    point: reportLocation,
+                    point: LatLng(lat, lng),
                     width: 80,
                     height: 80,
-                    child: const Icon(
-                      Icons.location_pin,
-                      color: Colors.red,
-                      size: 40,
-                    ),
+                    child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
                   );
                 }).toList(),
               ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
