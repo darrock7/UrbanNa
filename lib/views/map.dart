@@ -80,11 +80,38 @@ class _MapViewState extends State<MapView> {
                       final parts = report.location.split(',');
                       final lat = double.tryParse(parts[0]) ?? 0.0;
                       final lng = double.tryParse(parts[1]) ?? 0.0;
+
                       return Marker(
+                        width: 50,
+                        height: 50,
                         point: LatLng(lat, lng),
-                        width: 80,
-                        height: 80,
-                        child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: const Text('Delete Report?'),
+                                content: const Text('Do you want to delete this report?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      await reportProvider.deleteReport(report.id!); // Delete report
+                                      Navigator.pop(context);
+                                      setState(() {}); // Trigger UI update
+                                    },
+                                    child: const Text('Delete'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
+                        ),
                       );
                     }).toList(),
                   ),

@@ -28,4 +28,24 @@ class ReportProvider with ChangeNotifier {
     await loadReports();  // Reload reports after adding the new one
     notifyListeners();
   }
+
+  Future<void> deleteReport(int id) async {
+  // Get the database instance from DataHelper
+  final db = await DataHelper.instance.database;
+
+  // Delete the report from the database using the table name and column name from DataHelper
+  await db.delete(
+    DataHelper.tableName, // Use the table name from DataHelper
+    where: '${DataHelper.columnId} = ?', // Use the column name for the ID from DataHelper
+    whereArgs: [id], // Use the ID as the argument
+  );
+
+  // Remove the report from the in-memory list of reports
+  _reports.removeWhere((report) => report.id == id);
+
+  // Notify listeners to update the UI
+  notifyListeners();
+}
+
+
 }

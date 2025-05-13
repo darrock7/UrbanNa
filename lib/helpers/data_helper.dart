@@ -52,6 +52,12 @@ class DataHelper {
     return await db.query(tableName);
   }
 
+  Future<void> deleteReport(int id) async {
+    final db = await database;
+    await db.delete('reports', where: 'id = ?', whereArgs: [id]);
+  }
+
+
   Future close() async {
     Database db = await instance.database;
     db.close();
