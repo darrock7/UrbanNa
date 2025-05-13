@@ -42,6 +42,7 @@ class AboutView extends StatelessWidget {
             Text("1. Go to the Map tab and tap ➕ to submit an alert"),
             Text("2. Fill out the form with accurate details"),
             Text("3. Share alerts to help improve your city"),
+            Text("4. Check out the alerts on the map, the color will correspond to the severity level"),
             SizedBox(height: 24),
             Text("Version: 1.0.0"),
           ],

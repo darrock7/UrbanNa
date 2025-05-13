@@ -79,6 +79,7 @@ void _submitAlert() async {
     type: _selectedType,
     description: _descriptionController.text.trim(),
     location: location,
+    severity: _selectedSeverity,
   );
 
   await Provider.of<ReportProvider>(context, listen: false).addReport(newReport);

@@ -84,6 +84,7 @@ class _ProfileViewState extends State<ProfileView> {
                   _email = updated['email']!;
                 });
 
+                // ignore: use_build_context_synchronously
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Profile updated!')),
                 );

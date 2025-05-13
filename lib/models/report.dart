@@ -6,6 +6,7 @@ class Report {
   final String type;     // 'Safety Hazard' or 'Incident'
   final String description;
   final String location; 
+  final String severity; 
 
   Report({
     this.id,
@@ -13,6 +14,7 @@ class Report {
     required this.type,
     required this.description,
     required this.location,
+    required this.severity,
   });
 
   //
@@ -22,6 +24,7 @@ class Report {
       'type': type,
       'description': description,
       'location': location,
+      'severity': severity,
     };
   }
 
@@ -33,6 +36,7 @@ class Report {
       type: map['type'] ?? 'Unknown',
       description: map['description'] ?? 'Unknown',
       location: map['location'] ?? 'Unknown',
+      severity: map['severity'] ?? 'Low',
     );
   }
 }

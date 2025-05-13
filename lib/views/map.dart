@@ -30,6 +30,20 @@ class _MapViewState extends State<MapView> {
     super.dispose();
   }
 
+Color _severityLevel(String severity) {
+  switch (severity.toLowerCase()) {
+    case 'low':
+      return Colors.green;
+    case 'medium':
+      return Colors.orange;
+    case 'high':
+      return Colors.red;
+    default:
+      return Colors.black;
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     final reportProvider = Provider.of<ReportProvider>(context);
@@ -91,16 +105,20 @@ class _MapViewState extends State<MapView> {
                             showDialog(
                               context: context,
                               builder: (_) => AlertDialog(
-                                title: const Text('Delete Report?'),
-                                content: const Text('Do you want to delete this report?'),
+                                title:  Text(report.type),
+                                content:  Text(report.description, style: 
+                                TextStyle(
+                                  color: _severityLevel(report.severity), 
+                                  fontWeight: FontWeight.bold)),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
-                                    child: const Text('Cancel'),
+                                    child: const Text('Exit'),
                                   ),
                                   TextButton(
                                     onPressed: () async {
                                       await reportProvider.deleteReport(report.id!); // Delete report
+                                      // ignore: use_build_context_synchronously
                                       Navigator.pop(context);
                                       setState(() {}); // Trigger UI update
                                     },

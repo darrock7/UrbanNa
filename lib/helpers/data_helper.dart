@@ -11,6 +11,7 @@ class DataHelper {
 
   static final columnCategory = "category";
   static final columnType = "type";
+  static final columnSeverity = "severity";
 
   static final columnDescription = "description";
   static final columnLocation = "location";
@@ -38,7 +39,8 @@ class DataHelper {
         $columnCategory TEXT NOT NULL,
         $columnType TEXT NOT NULL,
         $columnDescription TEXT NOT NULL,
-        $columnLocation TEXT NOT NULL
+        $columnLocation TEXT NOT NULL,
+        $columnSeverity TEXT NOT NULL
       )
     ''');
   }
