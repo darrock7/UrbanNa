@@ -1,19 +1,110 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'edit_profile_view.dart';
 
-class ProfileView extends StatelessWidget {
-  final String name;
-  final String email;
+class ProfileView extends StatefulWidget {
+  const ProfileView({super.key});
 
-  const ProfileView({super.key, required this.name, required this.email});
-  
+  @override
+  State<ProfileView> createState() => _ProfileViewState();
+}
+
+class _ProfileViewState extends State<ProfileView> {
+  String _name = 'Jane Doe';
+  String _email = 'janedoe@example.com';
+  File? _profileImage;
+
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        _profileImage = File(image.path);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text('Name: $name'),
-        Text('Email: $email'),
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          GestureDetector(
+            onTap: _pickImage,
+            child: Center(
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage:
+                    _profileImage != null ? FileImage(_profileImage!) : null,
+                child: _profileImage == null
+                    ? Text(
+                        _name.isNotEmpty ? _name[0].toUpperCase() : '?',
+                        style: const TextStyle(fontSize: 32),
+                      )
+                    : null,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Name'),
+              subtitle: Text(_name),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.email),
+              title: const Text('Email'),
+              subtitle: Text(_email),
+            ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: () async {
+              final updated = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      EditProfileView(name: _name, email: _email),
+                ),
+              );
+
+              if (updated != null && updated is Map<String, String>) {
+                setState(() {
+                  _name = updated['name']!;
+                  _email = updated['email']!;
+                });
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Profile updated!')),
+                );
+              }
+            },
+            icon: const Icon(Icons.edit),
+            label: const Text('Edit Profile'),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Logged out')),
+              );
+              // TODO: Add actual logout logic
+            },
+            icon: const Icon(Icons.logout),
+            label: const Text('Log Out'),
+          ),
+        ],
+      ),
     );
   }
 }

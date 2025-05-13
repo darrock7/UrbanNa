@@ -64,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
     body: Center(child: 
     switch (_currTabIndex) {
       0 => const MapView(),
-      1 => const ProfileView(name: 'John Smith', email: 'johnsmith@uw.edu'),
+      1 => const ProfileView(),
       2 => const AboutView(),
       3 => const SettingsView(),
       _ => const Placeholder(),
