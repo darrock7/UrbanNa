@@ -21,6 +21,18 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
   String _selectedSeverity = 'Medium';
   File? _image;
   LatLng? _selectedLocation;
+  final MapController _mapController = MapController();
+  double _currentZoom = 15.0;
+  static const double _minZoom = 3.0;
+  static const double _maxZoom = 18.0;
+  bool _isLocating = true;
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    _mapController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -82,6 +94,74 @@ void _submitAlert() async {
     _image = null;
   });
 }
+
+Widget _buildZoomControls() {
+    return Positioned(
+      right: 4,
+      top: 5,
+      child: Card(
+        elevation: 2,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                iconSize: 16,
+                icon: const Icon(Icons.add),
+                onPressed: () {
+                  final newZoom = (_currentZoom + 1).clamp(_minZoom, _maxZoom);
+                  _mapController.move(_mapController.camera.center, newZoom);
+                  setState(() {
+                    _currentZoom = newZoom;
+                  });
+                },
+              ),
+              SizedBox(
+                height: 80,
+                width: 20,
+                child: RotatedBox(
+                  quarterTurns: 3,
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+                      overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
+                      tickMarkShape: SliderTickMarkShape.noTickMark,
+                      trackHeight: 1.5,
+                    ), 
+                    child: Slider(
+                      value: _currentZoom,
+                      min: _minZoom,
+                      max: _maxZoom,
+                      divisions: (_maxZoom - _minZoom).toInt(),
+                      label: _currentZoom.toStringAsFixed(1),
+                      onChanged: (value) {
+                        setState(() {
+                          _currentZoom = value;
+                          _mapController.move(_mapController.camera.center, value);
+                        });
+                      },
+                    ),
+                  )
+                ),
+              ),
+              IconButton(
+                iconSize: 16,
+                icon: const Icon(Icons.remove),
+                onPressed: () {
+                  final newZoom = (_currentZoom - 1).clamp(_minZoom, _maxZoom);
+                  _mapController.move(_mapController.camera.center, newZoom);
+                  setState(() {
+                    _currentZoom = newZoom;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
 
   @override
@@ -164,31 +244,39 @@ void _submitAlert() async {
                     ],
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: FlutterMap(
-                    options: MapOptions(
-                      initialCenter: _selectedLocation!,
-                      initialZoom: 10,
-                      onTap: (_, point) =>
-                          setState(() => _selectedLocation = point),
-                    ),
+                  child: Stack(
                     children: [
-                      TileLayer(
-                        urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                        subdomains: ['a', 'b', 'c', 'd'],
-                        userAgentPackageName: 'com.example.urbanna',
-                        retinaMode: RetinaMode.isHighDensity(context),
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: _selectedLocation!,
-                            width: 40,
-                            height: 40,
-                            child: const Icon(Icons.location_pin,
-                                color: Colors.blue, size: 40),
+                      FlutterMap(
+                        mapController: _mapController,
+                        options: MapOptions(
+                          initialCenter: _selectedLocation!,
+                          initialZoom: _currentZoom,
+                          onTap: (_, point) =>
+                              setState(() => _selectedLocation = point),
+                          minZoom: _minZoom,
+                          maxZoom: _maxZoom
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                            subdomains: ['a', 'b', 'c', 'd'],
+                            userAgentPackageName: 'com.example.urbanna',
+                            retinaMode: RetinaMode.isHighDensity(context),
+                          ),
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: _selectedLocation!,
+                                width: 40,
+                                height: 40,
+                                child: const Icon(Icons.location_pin,
+                                    color: Colors.blue, size: 40),
+                              )
+                            ],
                           )
                         ],
-                      )
+                      ),
+                      _buildZoomControls(),
                     ],
                   ),
                 ),
