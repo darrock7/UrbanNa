@@ -36,11 +36,16 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
   @override
   void initState() {
     super.initState();
+    // Set Seattle as the initial fallback
+    _selectedLocation = const LatLng(47.6062, -122.3321);
+    // Overriding with actual GPS coordinates
     _getCurrentLocation();
   }
 
   Future<void> _getCurrentLocation() async {
+  try {
     final permission = await Geolocator.requestPermission();
+
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
       return;
@@ -50,7 +55,11 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
     setState(() {
       _selectedLocation = LatLng(position.latitude, position.longitude);
     });
+  } catch (_) {
+    // Silent fail – keep default location (Seattle)
   }
+}
+
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
