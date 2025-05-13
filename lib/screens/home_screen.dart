@@ -31,7 +31,7 @@ class _MyHomePageState extends State<MyHomePage> {
           index: _currTabIndex,
           children: const [
             MapView(), // Map view
-            ProfileView(name: 'John Smith', email: 'johnsmith@uw.edu'), // Profile view
+            ProfileView(), // Profile view
             AboutView(), // About view
             SettingsView(), // Settings view
           ],
