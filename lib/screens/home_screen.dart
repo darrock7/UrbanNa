@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:urbanna/views/map.dart';
 import 'package:urbanna/views/profile.dart';
 import 'package:urbanna/views/about.dart';
-import 'package:urbanna/views/settings.dart';
 import 'package:urbanna/views/submit_alert.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -33,7 +32,6 @@ class _MyHomePageState extends State<MyHomePage> {
             MapView(), // Map view
             ProfileView(), // Profile view
             AboutView(), // About view
-            SettingsView(), // Settings view
           ],
         ),
       ),
@@ -49,7 +47,6 @@ class _MyHomePageState extends State<MyHomePage> {
           NavigationDestination(icon: Icon(Icons.map), label: 'Map'),
           NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
           NavigationDestination(icon: Icon(Icons.info_outline), label: 'About'),
-          NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
           floatingActionButton: _currTabIndex == 0 ? FloatingActionButton(
