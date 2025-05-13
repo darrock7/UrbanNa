@@ -25,7 +25,6 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
   double _currentZoom = 15.0;
   static const double _minZoom = 3.0;
   static const double _maxZoom = 18.0;
-  bool _isLocating = true;
 
   @override
   void dispose() {
