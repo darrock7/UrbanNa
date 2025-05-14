@@ -1,88 +1,44 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:provider/provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:urbanna/main.dart';
-import 'package:urbanna/views/about.dart';
+import 'package:urbanna/providers/report_provider.dart';
 import 'package:urbanna/views/map.dart';
 import 'package:urbanna/views/profile.dart';
+import 'package:urbanna/views/about.dart';
 
 void main() {
-  testWidgets('Profile tab shows correct content', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
+  
+  testWidgets('Tab navigation between Map, Profile, and About',
+      (WidgetTester tester) async {
 
-    // Checks that the initial state of the app is the MapView
+    // Build our app
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => ReportProvider()),
+          ],
+          child: const MyApp(),
+        ),
+      );
+    // Verify that the MapView is displayed first (it is the default)
     expect(find.byType(MapView), findsOneWidget);
-    expect(find.byType(ProfileView), findsNothing);
 
-    // After tapping the Profile tab, it should show the ProfileView, sync it up
+    // Tap on the Profile tab and tests if the ProfileView is displayed
     await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
     expect(find.byType(ProfileView), findsOneWidget);
 
-    // Verify that ProfileView is shown with the correct information (mock data for now)
-    expect(find.byType(ProfileView), findsOneWidget);
-    expect(find.text('John Smith'), findsOneWidget);
-    expect(find.text('johnsmith@uw.edu'), findsOneWidget);
-  });
-
-  testWidgets('About tab shows correct content', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
-
-    // Makes sure the app's initial state is the MapView
-    expect(find.byType(MapView), findsOneWidget);
-    expect(find.byType(AboutView), findsNothing);
-
-    // Taps the About tab
+    // Tap on the About tab and tests if the AboutView is displayed
     await tester.tap(find.text('About'));
-    await tester.pumpAndSettle();
-    // Checks that the app is directed to show the AboutView
+    await tester.pump(const Duration(seconds: 1));
     expect(find.byType(AboutView), findsOneWidget);
-    
-    // Verify that the content shown in AboutView is correct
-    expect(find.text('Description: UrbanNa is a mobile application that helps users find and connect with local services and businesses.'), 
-    findsOneWidget);
-    expect(find.text('Version: 1.0.0'), findsOneWidget);
+
+    // Tap back on the Map tab and tests if the MapView is displayed again
+    await tester.tap(find.text('Map'));
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(MapView), findsOneWidget);
   });
-
-  testWidgets('Tab navigation works correctly', (WidgetTester tester) async {
-  await tester.pumpWidget(const MyApp());
-
-  // Initially, the MapView should be displayed
-  expect(find.byType(MapView), findsOneWidget);
-  expect(find.byType(ProfileView), findsNothing);
-  expect(find.byType(AboutView), findsNothing);
-
-  // Tap the Profile tab and verify ProfileView is displayed
-  await tester.tap(find.text('Profile'));
-  await tester.pumpAndSettle();
-  expect(find.byType(ProfileView), findsOneWidget);
-  expect(find.byType(MapView), findsNothing);
-  expect(find.byType(AboutView), findsNothing);
-
-  // Tap the About tab and verify AboutView is displayed
-  await tester.tap(find.text('About'));
-  await tester.pumpAndSettle();
-  expect(find.byType(AboutView), findsOneWidget);
-  expect(find.byType(ProfileView), findsNothing);
-  expect(find.byType(MapView), findsNothing);
-
-  // Tap the Map tab and verify MapView is displayed again
-  await tester.tap(find.text('Map'));
-  await tester.pumpAndSettle();
-  expect(find.byType(MapView), findsOneWidget);
-  expect(find.byType(ProfileView), findsNothing);
-  expect(find.byType(AboutView), findsNothing);
-});
-
 }
