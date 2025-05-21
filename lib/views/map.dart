@@ -39,46 +39,40 @@ class _MapViewState extends State<MapView> {
 
   @override
   Widget build(BuildContext context) {
+    final reportProvider = Provider.of<ReportProvider>(context);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Map View')),
-      body: StreamBuilder<List<Report>>(
-        stream: Provider.of<ReportProvider>(context).getReportsStream(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          final reports = snapshot.data ?? [];
-
-          return Stack(
+      body: Stack(
+        children: [
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: LatLng(47.6062, -122.3321),
+              initialZoom: _currentZoom,
+              onMapEvent: (event) {
+                if (event is MapEventMove && event.source != MapEventSource.mapController) {
+                  setState(() {
+                    _currentZoom = _mapController.camera.zoom;
+                  });
+                }
+              },
+              minZoom: _minZoom,
+              maxZoom: _maxZoom,
+            ),
             children: [
-              FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  initialCenter: LatLng(47.6062, -122.3321),
-                  initialZoom: _currentZoom,
-                  onMapEvent: (event) {
-                    if (event is MapEventMove && event.source != MapEventSource.mapController) {
-                      setState(() {
-                        _currentZoom = _mapController.camera.zoom;
-                      });
-                    }
-                  },
-                  minZoom: _minZoom,
-                  maxZoom: _maxZoom,
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                    subdomains: ['a', 'b', 'c', 'd'],
-                    userAgentPackageName: 'com.urbanna.app',
-                    retinaMode: RetinaMode.isHighDensity(context),
-                  ),
-                  MarkerLayer(
+              TileLayer(
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                subdomains: ['a', 'b', 'c', 'd'],
+                userAgentPackageName: 'com.urbanna.app',
+                retinaMode: RetinaMode.isHighDensity(context),
+              ),
+              // StreamBuilder only wraps marker to get smooth movements on the map
+              StreamBuilder<List<Report>>(
+                stream: reportProvider.getReportsStream(),
+                builder: (context, snapshot) {
+                  final reports = snapshot.data ?? [];
+                  return MarkerLayer(
                     markers: reports.map((report) {
                       final parts = report.location.split(',');
                       final lat = double.tryParse(parts[0]) ?? 0.0;
@@ -93,24 +87,22 @@ class _MapViewState extends State<MapView> {
                           onTap: () {
                             showDialog(
                               context: context,
-                              builder: (_) => AlertDialog(
+                              builder: (dialogContext) => AlertDialog(
                                 title: Text(report.type),
-                                content: Text(report.description, 
-                                  style: TextStyle(
-                                    color: _severityLevel(report.severity), 
-                                    fontWeight: FontWeight.bold)),
+                                content: Text(report.description,
+                                    style: TextStyle(
+                                        color: _severityLevel(report.severity),
+                                        fontWeight: FontWeight.bold)),
                                 actions: [
                                   TextButton(
-                                    onPressed: () => Navigator.pop(context),
+                                    onPressed: () => Navigator.of(dialogContext).pop(),
                                     child: const Text('Exit'),
                                   ),
                                   TextButton(
                                     onPressed: () async {
-                                      await Provider.of<ReportProvider>(
-                                        context, 
-                                        listen: false
-                                      ).deleteReport(report.id!);
-                                      Navigator.pop(context);
+                                      await reportProvider.deleteReport(report.id!);
+                                      // ignore: use_build_context_synchronously
+                                      Navigator.of(dialogContext).pop();
                                     },
                                     child: const Text('Delete'),
                                   ),
@@ -118,80 +110,79 @@ class _MapViewState extends State<MapView> {
                               ),
                             );
                           },
-                          child: const Icon(Icons.location_pin, 
-                            color: Colors.red, 
-                            size: 40),
+                          child: const Icon(Icons.location_pin,
+                              color: Colors.red, size: 40),
                         ),
                       );
                     }).toList(),
-                  ),
-                ],
-              ),
-              Positioned(
-                left: 16,
-                bottom: 16,
-                child: Card(
-                  elevation: 4,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed: () {
-                            final newZoom = (_currentZoom + 1).clamp(_minZoom, _maxZoom);
-                            _mapController.move(_mapController.camera.center, newZoom);
-                            setState(() {
-                              _currentZoom = newZoom;
-                            });
-                          },
-                        ),
-                        SizedBox(
-                          height: 150,
-                          child: RotatedBox(
-                            quarterTurns: 3,
-                            child: SliderTheme(
-                              data: SliderTheme.of(context).copyWith(
-                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
-                                overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
-                                tickMarkShape: SliderTickMarkShape.noTickMark,
-                                trackHeight: 1.5,
-                              ), 
-                              child: Slider(
-                                value: _currentZoom,
-                                min: _minZoom,
-                                max: _maxZoom,
-                                divisions: (_maxZoom - _minZoom).toInt(),
-                                label: _currentZoom.toStringAsFixed(1),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _currentZoom = value;
-                                    _mapController.move(_mapController.camera.center, value);
-                                  });
-                                },
-                              ),
-                            )
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.remove),
-                          onPressed: () {
-                            final newZoom = (_currentZoom - 1).clamp(_minZoom, _maxZoom);
-                            _mapController.move(_mapController.camera.center, newZoom);
-                            setState(() {
-                              _currentZoom = newZoom;
-                            });
-                          },
-                        ),
-                      ],
-                    )
-                  ),
-                )
+                  );
+                },
               )
             ],
-          );
-        },
+          ),
+          Positioned(
+            left: 16,
+            bottom: 16,
+            child: Card(
+              elevation: 4,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () {
+                        final newZoom = (_currentZoom + 1).clamp(_minZoom, _maxZoom);
+                        _mapController.move(_mapController.camera.center, newZoom);
+                        setState(() {
+                          _currentZoom = newZoom;
+                        });
+                      },
+                    ),
+                    SizedBox(
+                      height: 150,
+                      child: RotatedBox(
+                        quarterTurns: 3,
+                        child: SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+                            overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
+                            tickMarkShape: SliderTickMarkShape.noTickMark,
+                            trackHeight: 1.5,
+                          ), 
+                          child: Slider(
+                            value: _currentZoom,
+                            min: _minZoom,
+                            max: _maxZoom,
+                            divisions: (_maxZoom - _minZoom).toInt(),
+                            label: _currentZoom.toStringAsFixed(1),
+                            onChanged: (value) {
+                              setState(() {
+                                _currentZoom = value;
+                                _mapController.move(_mapController.camera.center, value);
+                              });
+                            },
+                          ),
+                        )
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.remove),
+                      onPressed: () {
+                        final newZoom = (_currentZoom - 1).clamp(_minZoom, _maxZoom);
+                        _mapController.move(_mapController.camera.center, newZoom);
+                        setState(() {
+                          _currentZoom = newZoom;
+                        });
+                      },
+                    ),
+                  ],
+                )
+              ),
+            )
+          )
+        ],
       ),
     );
   }
