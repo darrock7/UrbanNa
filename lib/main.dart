@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
  
 import 'package:urbanna/providers/report_provider.dart';  
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -9,17 +10,20 @@ import 'package:path/path.dart';
 import 'package:urbanna/helpers/data_helper.dart';
 import 'package:urbanna/screens/login_screen.dart';
 
-
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
+  // Initialize SQLite for desktop platforms
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
 
-  await deleteOldDb();
+  // For development only - remove or comment out this line for production
+  // await deleteOldDb();
 
   runApp(
     ChangeNotifierProvider(
@@ -34,6 +38,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Start listening for real-time updates from Firestore
+    Future.microtask(() {
+      Provider.of<ReportProvider>(context, listen: false).startRealtimeUpdates();
+    });
+    
     return MaterialApp(
       title: 'UrbanNa Demo',
       theme: ThemeData(

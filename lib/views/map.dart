@@ -30,19 +30,18 @@ class _MapViewState extends State<MapView> {
     super.dispose();
   }
 
-Color _severityLevel(String severity) {
-  switch (severity.toLowerCase()) {
-    case 'low':
-      return Colors.green;
-    case 'medium':
-      return Colors.orange;
-    case 'high':
-      return Colors.red;
-    default:
-      return Colors.black;
+  Color _severityLevel(String severity) {
+    switch (severity.toLowerCase()) {
+      case 'low':
+        return Colors.green;
+      case 'medium':
+        return Colors.orange;
+      case 'high':
+        return Colors.red;
+      default:
+        return Colors.black;
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -105,30 +104,62 @@ Color _severityLevel(String severity) {
                             showDialog(
                               context: context,
                               builder: (_) => AlertDialog(
-                                title:  Text(report.type),
-                                content:  Text(report.description, style: 
-                                TextStyle(
-                                  color: _severityLevel(report.severity), 
-                                  fontWeight: FontWeight.bold)),
+                                title: Text(report.type),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      report.description,
+                                      style: TextStyle(
+                                        color: _severityLevel(report.severity),
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Severity: ${report.severity}',
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    Text(
+                                      'Reported: ${report.timestamp.toString().split('.')[0]}',
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
                                     child: const Text('Exit'),
                                   ),
-                                  TextButton(
-                                    onPressed: () async {
-                                      await reportProvider.deleteReport(report.id!); // Delete report
-                                      // ignore: use_build_context_synchronously
-                                      Navigator.pop(context);
-                                      setState(() {}); // Trigger UI update
-                                    },
-                                    child: const Text('Delete'),
-                                  ),
+                                  // Only show delete if current user owns the report
+                                  if (report.userId == reportProvider.currentUserId)
+                                    TextButton(
+                                      onPressed: () async {
+                                        // Use Firestore ID if available, fall back to SQLite ID
+                                        if (report.firestoreId != null) {
+                                          await reportProvider.deleteFirestoreReport(report.firestoreId!);
+                                        } else if (report.id != null) {
+                                          await reportProvider.deleteReport(report.id!);
+                                        }
+                                        
+                                        // ignore: use_build_context_synchronously
+                                        Navigator.pop(context);
+                                        setState(() {}); // Trigger UI update
+                                      },
+                                      child: const Text('Delete'),
+                                    ),
                                 ],
                               ),
                             );
                           },
-                          child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
+                          child: Icon(
+                            Icons.location_pin, 
+                            color: report.userId == reportProvider.currentUserId 
+                                ? Colors.blue // User's own reports
+                                : Colors.red,  // Others' reports
+                            size: 40
+                          ),
                         ),
                       );
                     }).toList(),
@@ -204,3 +235,4 @@ Color _severityLevel(String severity) {
     );
   }
 }
+

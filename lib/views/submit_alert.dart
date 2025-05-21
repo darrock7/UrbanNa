@@ -73,6 +73,9 @@ void _submitAlert() async {
   final location = _selectedLocation != null
       ? "${_selectedLocation!.latitude},${_selectedLocation!.longitude}"
       : "0.0,0.0";
+      
+  // Get current user ID from the provider
+  final userId = Provider.of<ReportProvider>(context, listen: false).currentUserId;
 
   final newReport = Report(
     category: 'Report',
@@ -80,6 +83,7 @@ void _submitAlert() async {
     description: _descriptionController.text.trim(),
     location: location,
     severity: _selectedSeverity,
+    userId: userId,
   );
 
   await Provider.of<ReportProvider>(context, listen: false).addReport(newReport);
@@ -268,7 +272,7 @@ Widget _buildZoomControls() {
                         children: [
                           TileLayer(
                             urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                            subdomains: ['a', 'b', 'c', 'd'],
+                            subdomains: const ['a', 'b', 'c', 'd'],
                             userAgentPackageName: 'com.example.urbanna',
                             retinaMode: RetinaMode.isHighDensity(context),
                           ),

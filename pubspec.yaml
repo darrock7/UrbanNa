@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  firebase_core: ^2.17.0
+  cloud_firestore: ^4.9.3
   flutter_map: ^8.1.1
   latlong2: ^0.9.0
 

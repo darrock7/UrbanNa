@@ -14,6 +14,9 @@ import 'package:urbanna/views/about.dart';
 // ✅ Mock provider to avoid hanging FutureBuilder in MapView
 class MockReportProvider extends ReportProvider {
   @override
+  List<Report> reports = [];
+  
+  @override
   Future<void> loadReports() async {
     reports.clear();
     reports.add(
@@ -23,13 +26,17 @@ class MockReportProvider extends ReportProvider {
         severity: 'low',
         location: '37.7749,-122.4194',
         category: 'General',
-        type: 'Hazard',           
+        type: 'Hazard',
+        userId: 'test-user',          
       ),
     );
   }
 
   @override
-  Future<void> deleteReport(int id) async {}
+  Future<void> deleteReport(int id, {String? firestoreId}) async {}
+  
+  @override
+  Future<void> deleteFirestoreReport(String firestoreId) async {}
 }
 
 void main() {
