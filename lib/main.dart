@@ -4,9 +4,10 @@ import 'package:provider/provider.dart';
  
 import 'package:urbanna/providers/report_provider.dart';  
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:path_provider/path_provider.dart';
+// ignore: depend_on_referenced_packages
 import 'package:path/path.dart';
 import 'package:urbanna/helpers/data_helper.dart';
+import 'package:urbanna/screens/login_screen.dart';
 
 
 
@@ -51,8 +52,10 @@ Future<void> deleteOldDb() async {
 
   if (await dbFile.exists()) {
     await dbFile.delete();
+    // ignore: avoid_print
     print('🗑️ Deleted old database at: $path');
   } else {
+    // ignore: avoid_print
     print('ℹ️ No existing database found at: $path');
   }
 }
