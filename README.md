@@ -30,12 +30,14 @@ We will have a few folders that will be designated to help maintain the structur
 Weekly Status Report can be found [here](https://docs.google.com/document/d/10sjFqyLY74quO8Lj4e5b28xgHaAJKX6YRBoEvSDAfjE/edit?usp=sharing)
 
 ## Version Control
-When we commit we aim to have a clear description of what we changed and let the others know via messages. This allows all of us to check and examined what changed before commiting or pushing any other display. We want to create more branches as we continue to debug and improve our code especially proceeding our develpoment stage. This will be crucial as there are many elements we have left and many parts we want to continue to expand upon (e.g login, upvote, and photo inclusion).
+When we commit we aim to have a clear description of what we changed and let the others know via messages. This allows all of us to check and examine what changed before commiting or pushing any other display. We want to create more branches as we continue to debug and improve our code, especially proceeding our development stage. This will be crucial as there are many elements we have left and many parts we want to continue to expand upon (e.g login, upvote, and photo inclusion).
 
 ## How to build and run system
-To build and download this app we need to have a Flutter Version of 3.29.3 of higher and a Dart Version of 3.7.2 or higher. This will ensure all of the following code is possible and able to sync up with the following Providers and widgets. 
+To build and download this app, we need to have a Flutter Version of 3.29.3 or higher and a Dart Version of 3.7.2 or higher. This will ensure all of the following code is possible and able to sync up with the following Providers and widgets. 
 
 After ensuring the right version and downloading the code for the app and use flutter pub get the right dependancies, these include the database and provider is possible. When it is done use Flutter run to test out the app. This can be done through emulators with Android Studio and XCode or if a device is connected run Flutter run devices and select the right one.
+
+More details on how to download the correct version of Flutter and emulators can be found on [flutter.dev](https://docs.flutter.dev/get-started/install?_gl=1*1xz7z94*_ga*MzQxMTYyMTU3LjE3NDU1MjcwMTQ.*_ga_04YGWK0175*czE3NDc3ODc2OTkkbzckZzAkdDE3NDc3ODc2OTkkajAkbDAkaDA.) after choosing the development platform and type of app you want use to build the app with.
 
 ## How to test system
 We have included a Github actions CI which allows for the user to get the immediate dependacies and analyze the code. This is through the Flutter pub get, and Flutter analyze. This happens each time we pull or push into github. These commands can be independently done alongside Flutter test, which will run every test inside of our test folder. 
