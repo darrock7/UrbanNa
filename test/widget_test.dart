@@ -11,7 +11,7 @@ import 'package:urbanna/views/map.dart';
 import 'package:urbanna/views/profile.dart';
 import 'package:urbanna/views/about.dart';
 
-// ✅ Mock provider to avoid hanging FutureBuilder in MapView
+// Mock provider to avoid hanging FutureBuilder in MapView
 class MockReportProvider extends ReportProvider {
   @override
   Future<void> loadReports() async {
@@ -50,7 +50,7 @@ void main() {
       email: 'test@example.com',
     )));
 
-    // Default tab: Map
+    // Starting view should be MapView
     expect(find.byType(MapView), findsOneWidget);
 
     // Navigate to Profile
@@ -72,9 +72,27 @@ void main() {
   testWidgets('Guest login navigates to MapView', (WidgetTester tester) async {
     await tester.pumpWidget(createWidgetUnderTest(const LoginScreen()));
 
-    await tester.tap(find.byKey(const Key('guestButton')));
-    await tester.pumpAndSettle(); // should now complete safely
+    // Tap the guest guest button (For quick access)
+    await tester.tap(find.byKey(const Key('guestButton'))); // Testing Dev Guest Login
+    await tester.pumpAndSettle(); 
 
+    // Verify that the MapView is displayed
     expect(find.byType(MapView), findsOneWidget);
+  });
+
+  testWidgets('A successful Login button navigates to Mapview', (WidgetTester tester) async {
+    await tester.pumpWidget(createWidgetUnderTest(const LoginScreen()));
+
+    // Enter text in the text fields
+    await tester.enterText(find.byKey(const Key('emailField')), 'testing@gamil.com'); 
+    await tester.enterText(find.byKey(const Key('nameField')), 'Darrick');
+
+    // Tap the login button
+    await tester.tap(find.byKey(const Key('loginButton')));
+    await tester.pumpAndSettle();
+
+    // Verify that the MapView is displayed
+    expect(find.byType(MapView), findsOneWidget);
+
   });
 }
