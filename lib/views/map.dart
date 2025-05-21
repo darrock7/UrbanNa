@@ -86,7 +86,7 @@ Color _severityLevel(String severity) {
                   TileLayer(
                     urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                     subdomains: ['a', 'b', 'c', 'd'],
-                    userAgentPackageName: 'com.example.urbanna',
+                    userAgentPackageName: 'com.urbanna.app',
                     retinaMode: RetinaMode.isHighDensity(context),
                   ),
                   MarkerLayer(
