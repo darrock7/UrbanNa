@@ -14,7 +14,7 @@ community.
 ## Technical Approach 
 1. Frontend: A cross-platform framework (e.g., Flutter) in order to reach more users
 2. Backend: Node.js with Express
-3. Database: A NoSQL database (Temporary SQlLite)
+3. Database: FIREBASE (NoSQL)
 4. Machine Learning: Simple ML model to validate images according to severity
 
 # Repo Format
