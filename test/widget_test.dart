@@ -13,12 +13,11 @@ import 'package:urbanna/views/about.dart';
 
 // Mock provider to avoid hanging FutureBuilder in MapView
 class MockReportProvider extends ReportProvider {
-  @override
   Future<void> loadReports() async {
     reports.clear();
     reports.add(
       Report(
-        id: 1,
+        id: '1',
         description: 'I hate testing this app', 
         severity: 'low',
         location: '37.7749,-122.4194',
@@ -29,7 +28,7 @@ class MockReportProvider extends ReportProvider {
   }
 
   @override
-  Future<void> deleteReport(int id) async {}
+  Future<void> deleteReport(String id) async {}
 }
 
 void main() {
