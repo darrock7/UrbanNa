@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:urbanna/screens/home_screen.dart';
+import 'package:urbanna/screens/signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -40,6 +41,15 @@ class _LoginScreenState extends State<LoginScreen> {
           name: 'John Doe',
           email: 'johndoe@gmail.com',
         ),
+      ),
+    );
+  }
+
+  void _signup() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SignupScreen(),
       ),
     );
   }
@@ -118,6 +128,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Don\'t have an account? '),
+                  TextButton(
+                    onPressed: _signup,
+                    child: const Text("Sign Up"),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
