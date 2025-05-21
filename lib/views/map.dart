@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:urbanna/providers/report_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:urbanna/models/report.dart';
 
 class MapView extends StatefulWidget {
   const MapView({super.key});
@@ -12,17 +13,10 @@ class MapView extends StatefulWidget {
 }
 
 class _MapViewState extends State<MapView> {
-  late Future<void> _loadFuture;
   final MapController _mapController = MapController();
   double _currentZoom = 12.0;
   static const double _minZoom = 3.0;
   static const double _maxZoom = 18.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFuture = Provider.of<ReportProvider>(context, listen: false).loadReports();
-  }
 
   @override
   void dispose() {
@@ -30,42 +24,37 @@ class _MapViewState extends State<MapView> {
     super.dispose();
   }
 
-Color _severityLevel(String severity) {
-  switch (severity.toLowerCase()) {
-    case 'low':
-      return Colors.green;
-    case 'medium':
-      return Colors.orange;
-    case 'high':
-      return Colors.red;
-    default:
-      return Colors.black;
+  Color _severityLevel(String severity) {
+    switch (severity.toLowerCase()) {
+      case 'low':
+        return Colors.green;
+      case 'medium':
+        return Colors.orange;
+      case 'high':
+        return Colors.red;
+      default:
+        return Colors.black;
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
-    final reportProvider = Provider.of<ReportProvider>(context);
+    return Scaffold(
+      appBar: AppBar(title: const Text('Map View')),
+      body: StreamBuilder<List<Report>>(
+        stream: Provider.of<ReportProvider>(context).getReportsStream(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-    return FutureBuilder(
-      future: _loadFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
-        if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(child: Text('Error: ${snapshot.error}')),
-          );
-        }
+          final reports = snapshot.data ?? [];
 
-        return Scaffold(
-          appBar: AppBar(title: const Text('Map View')),
-          body: Stack(
+          return Stack(
             children: [
               FlutterMap(
                 mapController: _mapController,
@@ -90,7 +79,7 @@ Color _severityLevel(String severity) {
                     retinaMode: RetinaMode.isHighDensity(context),
                   ),
                   MarkerLayer(
-                    markers: reportProvider.reports.map((report) {
+                    markers: reports.map((report) {
                       final parts = report.location.split(',');
                       final lat = double.tryParse(parts[0]) ?? 0.0;
                       final lng = double.tryParse(parts[1]) ?? 0.0;
@@ -105,11 +94,11 @@ Color _severityLevel(String severity) {
                             showDialog(
                               context: context,
                               builder: (_) => AlertDialog(
-                                title:  Text(report.type),
-                                content:  Text(report.description, style: 
-                                TextStyle(
-                                  color: _severityLevel(report.severity), 
-                                  fontWeight: FontWeight.bold)),
+                                title: Text(report.type),
+                                content: Text(report.description, 
+                                  style: TextStyle(
+                                    color: _severityLevel(report.severity), 
+                                    fontWeight: FontWeight.bold)),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
@@ -117,10 +106,11 @@ Color _severityLevel(String severity) {
                                   ),
                                   TextButton(
                                     onPressed: () async {
-                                      await reportProvider.deleteReport(report.id!); // Delete report
-                                      // ignore: use_build_context_synchronously
+                                      await Provider.of<ReportProvider>(
+                                        context, 
+                                        listen: false
+                                      ).deleteReport(report.id!);
                                       Navigator.pop(context);
-                                      setState(() {}); // Trigger UI update
                                     },
                                     child: const Text('Delete'),
                                   ),
@@ -128,7 +118,9 @@ Color _severityLevel(String severity) {
                               ),
                             );
                           },
-                          child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
+                          child: const Icon(Icons.location_pin, 
+                            color: Colors.red, 
+                            size: 40),
                         ),
                       );
                     }).toList(),
@@ -198,9 +190,9 @@ Color _severityLevel(String severity) {
                 )
               )
             ],
-          )
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

@@ -43,6 +43,8 @@ dependencies:
   path_provider: ^2.1.1 # or latest from https://pub.dev/packages/path_provider
   geolocator: ^14.0.0
   sqflite_common_ffi: ^2.3.0
+  firebase_core: ^2.24.0
+  cloud_firestore: ^4.15.0
   
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "831060358644",
+    "firebase_url": "https://urbanna-515b0-default-rtdb.firebaseio.com",
+    "project_id": "urbanna-515b0",
+    "storage_bucket": "urbanna-515b0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:831060358644:android:66097ab27678dac392b5a1",
+        "android_client_info": {
+          "package_name": "com.example.urbanna"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1aC0kJ8cZZz0ix0xyHg2Uiv-mf8SuGYc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

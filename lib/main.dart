@@ -8,22 +8,20 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:path/path.dart';
 import 'package:urbanna/helpers/data_helper.dart';
 import 'package:urbanna/screens/login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+// Generated file (run `flutterfire configure` if missing)
 
 
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
-
-  await deleteOldDb();
-
+  await Firebase.initializeApp();
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ReportProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ReportProvider()), // Remove type annotation
+      ],
       child: const MyApp(),
     ),
   );
