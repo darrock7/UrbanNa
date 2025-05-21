@@ -5,9 +5,13 @@ import 'package:urbanna/views/about.dart';
 import 'package:urbanna/views/submit_alert.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({super.key, required this.title, required this.name, required this.email});
 
   final String title;
+  final String name;
+  final String email;
+  
+
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -28,10 +32,10 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: IndexedStack(
           index: _currTabIndex,
-          children: const [
-            MapView(), // Map view
-            ProfileView(), // Profile view
-            AboutView(), // About view
+          children: [
+            const MapView(), // Map view
+            ProfileView(name: widget.name, email: widget.email), // Profile view
+            const AboutView(), // About view
           ],
         ),
       ),

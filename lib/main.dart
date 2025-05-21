@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:urbanna/screens/home_screen.dart';  
+ 
 import 'package:urbanna/providers/report_provider.dart';  
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:urbanna/screens/login_screen.dart';
 
 void main() {
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'UrbanNa'),  
+      home: const LoginScreen(), 
     );
   }
 }

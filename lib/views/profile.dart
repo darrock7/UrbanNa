@@ -1,19 +1,29 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:urbanna/screens/login_screen.dart';
 import 'edit_profile_view.dart';
 
 class ProfileView extends StatefulWidget {
-  const ProfileView({super.key});
+  final String name;
+  final String email;
+  const ProfileView({super.key, required this.name, required this.email});
 
   @override
   State<ProfileView> createState() => _ProfileViewState();
 }
 
 class _ProfileViewState extends State<ProfileView> {
-  String _name = 'Jane Doe';
-  String _email = 'janedoe@example.com';
+  late String _name;
+  late String _email;
   File? _profileImage;
+    @override
+    void initState() {
+      super.initState();
+      _name = widget.name;
+      _email = widget.email;
+    }
+
 
   final ImagePicker _picker = ImagePicker();
 
@@ -99,7 +109,10 @@ class _ProfileViewState extends State<ProfileView> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Logged out')),
               );
-              // TODO: Add actual logout logic
+              Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+              // TODO: Add actual logout logic (STILL)
             },
             icon: const Icon(Icons.logout),
             label: const Text('Log Out'),

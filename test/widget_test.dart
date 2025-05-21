@@ -1,44 +1,80 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:urbanna/main.dart';
+
 import 'package:urbanna/providers/report_provider.dart';
+import 'package:urbanna/models/report.dart';
+import 'package:urbanna/screens/login_screen.dart';
+import 'package:urbanna/screens/home_screen.dart';
 import 'package:urbanna/views/map.dart';
 import 'package:urbanna/views/profile.dart';
 import 'package:urbanna/views/about.dart';
 
+// ✅ Mock provider to avoid hanging FutureBuilder in MapView
+class MockReportProvider extends ReportProvider {
+  @override
+  Future<void> loadReports() async {
+    reports.clear();
+    reports.add(
+      Report(
+        id: 1,
+        description: 'I hate testing this app', 
+        severity: 'low',
+        location: '37.7749,-122.4194',
+        category: 'General',
+        type: 'Hazard',           
+      ),
+    );
+  }
+
+  @override
+  Future<void> deleteReport(int id) async {}
+}
+
 void main() {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
-  
-  testWidgets('Tab navigation between Map, Profile, and About',
-      (WidgetTester tester) async {
 
-    // Build our app
-      await tester.pumpWidget(
-        MultiProvider(
-          providers: [
-            ChangeNotifierProvider(create: (_) => ReportProvider()),
-          ],
-          child: const MyApp(),
-        ),
-      );
-    // Verify that the MapView is displayed first (it is the default)
+  Widget createWidgetUnderTest(Widget child) {
+    return ChangeNotifierProvider<ReportProvider>.value(
+      value: MockReportProvider(),
+      child: MaterialApp(home: child),
+    );
+  }
+
+  testWidgets('Tab navigation between Map, Profile, and About', (WidgetTester tester) async {
+    await tester.pumpWidget(createWidgetUnderTest(const MyHomePage(
+      title: 'UrbanNa',
+      name: 'Test User',
+      email: 'test@example.com',
+    )));
+
+    // Default tab: Map
     expect(find.byType(MapView), findsOneWidget);
 
-    // Tap on the Profile tab and tests if the ProfileView is displayed
+    // Navigate to Profile
     await tester.tap(find.text('Profile'));
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
     expect(find.byType(ProfileView), findsOneWidget);
 
-    // Tap on the About tab and tests if the AboutView is displayed
+    // Navigate to About
     await tester.tap(find.text('About'));
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
     expect(find.byType(AboutView), findsOneWidget);
 
-    // Tap back on the Map tab and tests if the MapView is displayed again
+    // Back to Map
     await tester.tap(find.text('Map'));
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(find.byType(MapView), findsOneWidget);
+  });
+
+  testWidgets('Guest login navigates to MapView', (WidgetTester tester) async {
+    await tester.pumpWidget(createWidgetUnderTest(const LoginScreen()));
+
+    await tester.tap(find.byKey(const Key('guestButton')));
+    await tester.pumpAndSettle(); // should now complete safely
+
     expect(find.byType(MapView), findsOneWidget);
   });
 }
