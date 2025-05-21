@@ -95,4 +95,36 @@ void main() {
     expect(find.byType(MapView), findsOneWidget);
 
   });
+
+
+  testWidgets('Repeated tab switching works correctly', (WidgetTester tester) async {
+  await tester.pumpWidget(createWidgetUnderTest(const MyHomePage(
+    title: 'UrbanNa',
+    name: 'Test User',
+    email: 'test@example.com',
+  )));
+
+  await tester.tap(find.text('About'));
+  await tester.pumpAndSettle();
+  expect(find.byType(AboutView), findsOneWidget);
+
+  await tester.tap(find.text('Map'));
+  await tester.pumpAndSettle();
+  expect(find.byType(MapView), findsOneWidget);
+
+  await tester.tap(find.text('Profile'));
+  await tester.pumpAndSettle();
+  expect(find.byType(ProfileView), findsOneWidget);
+});
+
+  testWidgets('Login does not proceed without name/email', (WidgetTester tester) async {
+  await tester.pumpWidget(createWidgetUnderTest(const LoginScreen()));
+
+  await tester.tap(find.byKey(const Key('loginButton')));
+  await tester.pumpAndSettle();
+
+  // Still on LoginScreen — not navigated
+  expect(find.byType(LoginScreen), findsOneWidget);
+});
+
 }
