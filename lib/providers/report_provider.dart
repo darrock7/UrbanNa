@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:urbanna/models/report.dart';
 
-class ReportProvider with ChangeNotifier { // Add `with ChangeNotifier`
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final List<Report> _reports = []; // Mark as final
+class ReportProvider with ChangeNotifier {
+  final FirebaseFirestore _firestore;
+  final List<Report> _reports = [];
+
+  // Constructor injection for testability
+  ReportProvider({FirebaseFirestore? firestore}) 
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   List<Report> get reports => _reports;
 
@@ -25,8 +29,9 @@ class ReportProvider with ChangeNotifier { // Add `with ChangeNotifier`
     notifyListeners();
   }
 
-  Future<void> deleteReport(String id) async { // Change parameter type to `String`
+  Future<void> deleteReport(String id) async {
     await _firestore.collection('reports').doc(id).delete();
     notifyListeners();
   }
 }
+
