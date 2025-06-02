@@ -77,7 +77,6 @@ class _MapViewState extends State<MapView> {
                       final parts = report.location.split(',');
                       final lat = double.tryParse(parts[0]) ?? 0.0;
                       final lng = double.tryParse(parts[1]) ?? 0.0;
-
                       return Marker(
                         width: 50,
                         height: 50,
@@ -88,21 +87,29 @@ class _MapViewState extends State<MapView> {
                             showDialog(
                               context: context,
                               builder: (dialogContext) => AlertDialog(
-                                title: Text(report.type),
-                                content: Text(report.description,
-                                    style: TextStyle(
-                                        color: _severityLevel(report.severity),
-                                        fontWeight: FontWeight.bold)),
+                                insetPadding: const EdgeInsets.all(20), // More space from screen edge
+                                contentPadding: const EdgeInsets.all(20),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                title: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(report.type, style: const TextStyle(fontSize: 20)),
+                                    IconButton(
+                                      icon: const Icon(Icons.close),
+                                      onPressed: () => Navigator.of(context).pop(),
+                                    ),
+                                  ],
+                                ),
+                                content: Text(
+                                  report.description,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
                                 actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.of(dialogContext).pop(),
-                                    child: const Text('Exit'),
-                                  ),
                                   TextButton(
                                     onPressed: () async {
                                       await reportProvider.deleteReport(report.id!);
                                       // ignore: use_build_context_synchronously
-                                      Navigator.of(dialogContext).pop();
+                                      Navigator.of(context).pop();
                                     },
                                     child: const Text('Delete'),
                                   ),
@@ -110,12 +117,12 @@ class _MapViewState extends State<MapView> {
                               ),
                             );
                           },
-                          child: const Icon(Icons.location_pin,
-                              color: Colors.red, size: 40),
+                          child: Icon(Icons.location_pin, color: _severityLevel(report.severity), size: 40),
                         ),
                       );
                     }).toList(),
                   );
+
                 },
               )
             ],
