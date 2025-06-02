@@ -7,7 +7,7 @@ class EmailVerifier {
     'api',
     'api2',
     'API_KEY_3',
-  ]; // Cycles through these API keys since it has a limiti 
+  ]; // Cycles through these API keys since it has a limit of 100
 
   static int _currKeyIndex = 0;
   static int _numCalls = 0;
