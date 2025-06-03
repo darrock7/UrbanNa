@@ -9,13 +9,11 @@
 
     lib/ -- Main Flutter application code
     
-    lib/views/ -- Screens like ProfileView, MapView, SettingsView
+        views/ -- Screens like ProfileView, MapView, SettingsView
 
-    lib/widgets/ -- Reusable components
+        widgets/ -- Reusable components
 
     test/ -- Unit and widget tests
-
-    backend/ -- Dart backend server 
 
     .github/workflows/ -- CI setup for GitHub Actions
 
