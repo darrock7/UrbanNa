@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:urbanna/providers/report_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:urbanna/models/report.dart';
+import 'package:urbanna/providers/report_provider.dart';
 
 class MapView extends StatefulWidget {
   const MapView({super.key});
@@ -51,7 +51,8 @@ class _MapViewState extends State<MapView> {
               initialCenter: LatLng(47.6062, -122.3321),
               initialZoom: _currentZoom,
               onMapEvent: (event) {
-                if (event is MapEventMove && event.source != MapEventSource.mapController) {
+                if (event is MapEventMove &&
+                    event.source != MapEventSource.mapController) {
                   setState(() {
                     _currentZoom = _mapController.camera.zoom;
                   });
@@ -62,12 +63,12 @@ class _MapViewState extends State<MapView> {
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                urlTemplate:
+                    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                 subdomains: ['a', 'b', 'c', 'd'],
                 userAgentPackageName: 'com.urbanna.app',
                 retinaMode: RetinaMode.isHighDensity(context),
               ),
-              // StreamBuilder only wraps marker to get smooth movements on the map
               StreamBuilder<List<Report>>(
                 stream: reportProvider.getReportsStream(),
                 builder: (context, snapshot) {
@@ -86,45 +87,125 @@ class _MapViewState extends State<MapView> {
                           onTap: () {
                             showDialog(
                               context: context,
-                              builder: (dialogContext) => AlertDialog(
-                                insetPadding: const EdgeInsets.all(20), // More space from screen edge
-                                contentPadding: const EdgeInsets.all(20),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                title: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(report.type, style: const TextStyle(fontSize: 20)),
-                                    IconButton(
-                                      icon: const Icon(Icons.close),
-                                      onPressed: () => Navigator.of(context).pop(),
-                                    ),
-                                  ],
-                                ),
-                                content: Text(
-                                  report.description,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () async {
-                                      await reportProvider.deleteReport(report.id!);
-                                      // ignore: use_build_context_synchronously
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: const Text('Delete'),
+                              builder: (dialogContext) {
+                                final isAuthor = report.userId == reportProvider.currentUserId;
+
+                                return AlertDialog(
+                                  insetPadding: const EdgeInsets.all(20),
+                                  contentPadding: const EdgeInsets.all(20),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
-                                ],
-                              ),
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          report.title,
+                                          style: const TextStyle(fontSize: 20),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.close),
+                                        onPressed: () => Navigator.of(dialogContext).pop(),
+                                      ),
+                                    ],
+                                  ),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        report.description,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold, fontSize: 16),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      if (isAuthor)
+                                        const Text(
+                                          'You cannot vote on your own report.',
+                                          style: TextStyle(color: Colors.grey),
+                                        )
+                                      else
+                                        FutureBuilder<String?>(
+                                          future: reportProvider.getUserVoteStatus(
+                                            report.id!,
+                                            reportProvider.currentUserId!,
+                                          ),
+                                          builder: (context, snapshot) {
+                                            final voteStatus = snapshot.data;
+
+                                            return Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                Column(
+                                                  children: [
+                                                    IconButton(
+                                                      icon: Icon(
+                                                        Icons.thumb_up,
+                                                        color: voteStatus == 'up'
+                                                            ? Colors.green
+                                                            : Colors.grey,
+                                                      ),
+                                                      onPressed: voteStatus == null
+                                                          ? () async {
+                                                              await reportProvider
+                                                                  .upvoteReport(
+                                                                      report.id!,
+                                                                      reportProvider
+                                                                          .currentUserId!);
+                                                              setState(() {});
+                                                            }
+                                                          : null,
+                                                    ),
+                                                    Text('${report.upvotes}'),
+                                                  ],
+                                                ),
+                                                Column(
+                                                  children: [
+                                                    IconButton(
+                                                      icon: Icon(
+                                                        Icons.thumb_down,
+                                                        color: voteStatus == 'down'
+                                                            ? Colors.red
+                                                            : Colors.grey,
+                                                      ),
+                                                      onPressed: voteStatus == null
+                                                          ? () async {
+                                                              await reportProvider
+                                                                  .downvoteReport(
+                                                                      report.id!,
+                                                                      reportProvider
+                                                                          .currentUserId!);
+                                                              setState(() {});
+                                                            }
+                                                          : null,
+                                                    ),
+                                                    Text('${report.downvotes}'),
+                                                  ],
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        ),
+                                    ],
+                                  ),
+                                );
+                              },
                             );
                           },
-                          child: Icon(Icons.location_pin, color: _severityLevel(report.severity), size: 40),
+                          child: Icon(
+                            Icons.location_pin,
+                            color: _severityLevel(report.severity),
+                            size: 40,
+                          ),
                         ),
                       );
                     }).toList(),
                   );
-
                 },
-              )
+              ),
             ],
           ),
           Positioned(
@@ -140,7 +221,8 @@ class _MapViewState extends State<MapView> {
                     IconButton(
                       icon: const Icon(Icons.add),
                       onPressed: () {
-                        final newZoom = (_currentZoom + 1).clamp(_minZoom, _maxZoom);
+                        final newZoom =
+                            (_currentZoom + 1).clamp(_minZoom, _maxZoom);
                         _mapController.move(_mapController.camera.center, newZoom);
                         setState(() {
                           _currentZoom = newZoom;
@@ -153,11 +235,13 @@ class _MapViewState extends State<MapView> {
                         quarterTurns: 3,
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
-                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
-                            overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
+                            thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 5),
+                            overlayShape: const RoundSliderOverlayShape(
+                                overlayRadius: 10),
                             tickMarkShape: SliderTickMarkShape.noTickMark,
                             trackHeight: 1.5,
-                          ), 
+                          ),
                           child: Slider(
                             value: _currentZoom,
                             min: _minZoom,
@@ -167,17 +251,19 @@ class _MapViewState extends State<MapView> {
                             onChanged: (value) {
                               setState(() {
                                 _currentZoom = value;
-                                _mapController.move(_mapController.camera.center, value);
+                                _mapController.move(
+                                    _mapController.camera.center, value);
                               });
                             },
                           ),
-                        )
+                        ),
                       ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.remove),
                       onPressed: () {
-                        final newZoom = (_currentZoom - 1).clamp(_minZoom, _maxZoom);
+                        final newZoom =
+                            (_currentZoom - 1).clamp(_minZoom, _maxZoom);
                         _mapController.move(_mapController.camera.center, newZoom);
                         setState(() {
                           _currentZoom = newZoom;
@@ -185,9 +271,9 @@ class _MapViewState extends State<MapView> {
                       },
                     ),
                   ],
-                )
+                ),
               ),
-            )
+            ),
           )
         ],
       ),

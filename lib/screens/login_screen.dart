@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:urbanna/providers/report_provider.dart';
 import 'package:urbanna/screens/home_screen.dart';
 import 'package:urbanna/screens/signup_screen.dart';
 
@@ -16,62 +18,53 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-void _login() async {
-  if (_formKey.currentState!.validate()) {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+  void _login() async {
+    if (_formKey.currentState!.validate()) {
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
 
-    try {
-      final userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
+      try {
+        final userCredential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(email: email, password: password);
 
-      final nameSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .get();
+        // ignore: use_build_context_synchronously
+        Provider.of<ReportProvider>(context, listen: false).currentUserId =
+            userCredential.user?.uid;
 
-      final name = nameSnapshot.data()?['name'] ?? 'User';
+        final nameSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .get();
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => MyHomePage(
-            title: 'UrbanNa',
-            name: name,
-            email: email,
+        final name = nameSnapshot.data()?['name'] ?? 'User';
+
+        Navigator.pushReplacement(
+          // ignore: use_build_context_synchronously
+          context,
+          MaterialPageRoute(
+            builder: (_) => MyHomePage(
+              title: 'UrbanNa',
+              name: name,
+              email: email,
+            ),
           ),
-        ),
-      );
-    } on FirebaseAuthException catch (e) {
-      final errorMessage = switch (e.code) {
-        'user-not-found' => 'No account found for that email.',
-        'wrong-password' => 'Incorrect password.',
-        'invalid-email' => 'Invalid email format.',
-        'network-request-failed' => 'Check your internet connection.',
-        'too-many-requests' => 'Too many attempts. Try again later.',
-        _ => 'Login failed. (${e.code})'
-      };
+        );
+      } on FirebaseAuthException catch (e) {
+        final errorMessage = switch (e.code) {
+          'user-not-found' => 'No account found for that email.',
+          'wrong-password' => 'Incorrect password.',
+          'invalid-email' => 'Invalid email format.',
+          'network-request-failed' => 'Check your internet connection.',
+          'too-many-requests' => 'Too many attempts. Try again later.',
+          _ => 'Login failed. (${e.code})'
+        };
 
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      }
     }
-  }
-}
-
-
-  void _guestLogin() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const MyHomePage(
-          title: 'UrbanNa',
-          name: 'John Doe',
-          email: 'johndoe@gmail.com',
-        ),
-      ),
-    );
   }
 
   void _signup() {
@@ -176,11 +169,11 @@ void _login() async {
                           const SizedBox(width: 16),
                           Expanded(
                             child: ElevatedButton.icon(
-                              key: const Key('guestButton'),
-                              onPressed: _guestLogin,
-                              icon: const Icon(Icons.person_outline, color: Colors.white),
+                              key: const Key('signupButton'),
+                              onPressed: _signup,
+                              icon: const Icon(Icons.person_add, color: Colors.white),
                               label: const Text(
-                                'Guest',
+                                'Sign Up',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -188,7 +181,7 @@ void _login() async {
                                 ),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.grey[800],
+                                backgroundColor: Colors.teal[700],
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30),
@@ -198,50 +191,6 @@ void _login() async {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Don't have an account? ",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                                shadows: [
-                                  Shadow(
-                                    offset: Offset(0, 1),
-                                    blurRadius: 2,
-                                    color: Colors.black87,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: _signup,
-                              child: const Text(
-                                "Sign Up",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
-                                  shadows: [
-                                    Shadow(
-                                      offset: Offset(0, 1),
-                                      blurRadius: 2,
-                                      color: Colors.black87,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
                     ],
                   ),
                 ),

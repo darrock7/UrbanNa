@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:urbanna/helpers/email_verifier.dart';
+import 'package:urbanna/providers/report_provider.dart';
 import 'package:urbanna/screens/home_screen.dart';
 import 'package:urbanna/screens/login_screen.dart';
 
@@ -15,7 +17,7 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreen extends State<SignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();  // later will be used to verify user
+  final _passwordController = TextEditingController();  
   final _pwVerficationController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -40,6 +42,8 @@ void _createAccount() async {
           .createUserWithEmailAndPassword(email: email, password: password);
 
       final userId = userCredential.user!.uid;
+      // ignore: use_build_context_synchronously
+      Provider.of<ReportProvider>(context, listen: false).currentUserId = userCredential.user?.uid;
 
 
       await FirebaseFirestore.instance.collection('users').doc(userId).set({

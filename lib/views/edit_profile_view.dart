@@ -1,9 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+// ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 
 class EditProfileView extends StatefulWidget {
@@ -24,14 +22,11 @@ class EditProfileView extends StatefulWidget {
 
 class _EditProfileViewState extends State<EditProfileView> {
   late TextEditingController _nameController;
-  String? _profilePictureUrl;
-  String? _localImagePath;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.name);
-    _profilePictureUrl = widget.profilePictureUrl;
   }
 
   @override
@@ -40,36 +35,18 @@ class _EditProfileViewState extends State<EditProfileView> {
     super.dispose();
   }
 
-  Future<void> _pickNewProfilePicture() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
-    if (picked != null) {
-      final file = File(picked.path);
-      final uid = FirebaseAuth.instance.currentUser!.uid;
-      final ref = FirebaseStorage.instance.ref().child('profile_pictures/$uid.jpg');
-      await ref.putFile(file);
-      final url = await ref.getDownloadURL();
-
-      setState(() {
-        _profilePictureUrl = url;
-        _localImagePath = picked.path;
-      });
-    }
-  }
-
   void _submit() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final userDoc = FirebaseFirestore.instance.collection('users').doc(uid);
 
     await userDoc.update({
       'name': _nameController.text.trim(),
-      'profilePictureUrl': _profilePictureUrl,
     });
 
     if (context.mounted) {
+      // ignore: use_build_context_synchronously
       Navigator.pop(context, {
         'name': _nameController.text.trim(),
-        'imagePath': _localImagePath,
       });
     }
   }
@@ -111,22 +88,6 @@ class _EditProfileViewState extends State<EditProfileView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundImage: _profilePictureUrl != null
-                        ? NetworkImage(_profilePictureUrl!)
-                        : null,
-                  ),
-                  TextButton(
-                    onPressed: _pickNewProfilePicture,
-                    child: const Text('Change Profile Picture'),
-                  ),
-                ],
-              ),
-            ),
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Name'),
@@ -145,16 +106,51 @@ class _EditProfileViewState extends State<EditProfileView> {
                     children: reports.map((data) {
                       final timestamp = (data['timestamp'] as Timestamp).toDate();
                       final formattedDate = DateFormat.yMMMd().format(timestamp);
+                      final upvotes = data['upvotes'] ?? 0;
+                      final downvotes = data['downvotes'] ?? 0;
+
                       return Card(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: ListTile(
-                          title: Text(data['title'] ?? 'Untitled'),
-                          subtitle: Text('${data['severity']} | $formattedDate'),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _deleteReport(data['id']),
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(data['title'] ?? 'Untitled'),
+                                    const SizedBox(height: 4),
+                                    Text('${data['severity']} | $formattedDate'),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.thumb_up, color: Colors.green, size: 20),
+                                      const SizedBox(width: 4),
+                                      Text('$upvotes'),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.thumb_down, color: Colors.red, size: 20),
+                                      const SizedBox(width: 4),
+                                      Text('$downvotes'),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteReport(data['id']),
+                              ),
+                            ],
                           ),
                         ),
                       );
