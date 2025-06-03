@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:urbanna/helpers/email_verifier.dart';
 import 'package:urbanna/screens/home_screen.dart';
 import 'package:urbanna/screens/login_screen.dart';
 
@@ -27,9 +28,15 @@ void _createAccount() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
+    final emailTest = await EmailVerifier.validate(email);
+    if (emailTest != null) {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(emailTest)));
+      return;
+    }
+
     try {
-      // 1. Create account in Firebase Auth
-      UserCredential userCredential = await FirebaseAuth.instance
+      final UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
 
       final userId = userCredential.user!.uid;

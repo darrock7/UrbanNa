@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:urbanna/screens/home_screen.dart';
 import 'package:urbanna/screens/signup_screen.dart';
@@ -14,23 +16,50 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      final email = _emailController.text.trim();
-      // final password = _passwordController.text.trim(); // Still not used yet
+void _login() async {
+  if (_formKey.currentState!.validate()) {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    try {
+      final userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      final nameSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      final name = nameSnapshot.data()?['name'] ?? 'User';
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (_) => MyHomePage(
             title: 'UrbanNa',
-            name: 'User',
+            name: name,
             email: email,
           ),
         ),
       );
+    } on FirebaseAuthException catch (e) {
+      final errorMessage = switch (e.code) {
+        'user-not-found' => 'No account found for that email.',
+        'wrong-password' => 'Incorrect password.',
+        'invalid-email' => 'Invalid email format.',
+        'network-request-failed' => 'Check your internet connection.',
+        'too-many-requests' => 'Too many attempts. Try again later.',
+        _ => 'Login failed. (${e.code})'
+      };
+
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
     }
   }
+}
+
 
   void _guestLogin() {
     Navigator.pushReplacement(

@@ -7,6 +7,7 @@ import 'edit_profile_view.dart';
 class ProfileView extends StatefulWidget {
   final String name;
   final String email;
+
   const ProfileView({super.key, required this.name, required this.email});
 
   @override
@@ -16,50 +17,36 @@ class ProfileView extends StatefulWidget {
 class _ProfileViewState extends State<ProfileView> {
   late String _name;
   late String _email;
-  File? _profileImage;
-    @override
-    void initState() {
-      super.initState();
-      _name = widget.name;
-      _email = widget.email;
-    }
+  String? _profilePictureUrl;
 
+  @override
+  void initState() {
+    super.initState();
+    _name = widget.name;
+    _email = widget.email;
+  }
 
   final ImagePicker _picker = ImagePicker();
-
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-
-    if (image != null) {
-      setState(() {
-        _profileImage = File(image.path);
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-      ),
+      appBar: AppBar(title: const Text('Profile')),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          GestureDetector(
-            onTap: _pickImage,
-            child: Center(
-              child: CircleAvatar(
-                radius: 50,
-                backgroundImage:
-                    _profileImage != null ? FileImage(_profileImage!) : null,
-                child: _profileImage == null
-                    ? Text(
-                        _name.isNotEmpty ? _name[0].toUpperCase() : '?',
-                        style: const TextStyle(fontSize: 32),
-                      )
-                    : null,
-              ),
+          Center(
+            child: CircleAvatar(
+              radius: 50,
+              backgroundImage: _profilePictureUrl != null
+                  ? NetworkImage(_profilePictureUrl!)
+                  : null,
+              child: _profilePictureUrl == null
+                  ? Text(
+                      _name.isNotEmpty ? _name[0].toUpperCase() : '?',
+                      style: const TextStyle(fontSize: 32),
+                    )
+                  : null,
             ),
           ),
           const SizedBox(height: 16),
@@ -83,18 +70,20 @@ class _ProfileViewState extends State<ProfileView> {
               final updated = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      EditProfileView(name: _name, email: _email),
+                  builder: (context) => EditProfileView(
+                    name: _name,
+                    email: _email,
+                    profilePictureUrl: _profilePictureUrl ?? '',
+                  ),
                 ),
               );
 
-              if (updated != null && updated is Map<String, String>) {
+              if (updated != null && updated is Map) {
                 setState(() {
-                  _name = updated['name']!;
-                  _email = updated['email']!;
+                  _name = updated['name'] ?? _name;
+                  _profilePictureUrl = updated['imagePath'];
                 });
 
-                // ignore: use_build_context_synchronously
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Profile updated!')),
                 );
@@ -109,10 +98,10 @@ class _ProfileViewState extends State<ProfileView> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Logged out')),
               );
-              Navigator.pushReplacement(context,
+              Navigator.pushReplacement(
+                context,
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
               );
-              // TODO: Add actual logout logic (STILL)
             },
             icon: const Icon(Icons.logout),
             label: const Text('Log Out'),

@@ -9,6 +9,7 @@ class Report {
   final String location;
   final String severity;
   final DateTime timestamp;
+  final String? imageUrl;
   final int upvotes;
   final int downvotes;
 
@@ -21,6 +22,7 @@ class Report {
     required this.location,
     required this.severity,
     DateTime? timestamp,
+    this.imageUrl,
     this.upvotes = 0,
     this.downvotes = 0,
   }) : timestamp = timestamp ?? DateTime.now();
@@ -34,6 +36,7 @@ class Report {
       'location': location,
       'severity': severity,
       'timestamp': Timestamp.fromDate(timestamp),
+      'imageUrl': imageUrl,
       'upvotes': upvotes,
       'downvotes': downvotes,
     };
@@ -49,6 +52,7 @@ class Report {
       location: map['location'] ?? 'Unknown',
       severity: map['severity'] ?? 'Low',
       timestamp: (map['timestamp'] as Timestamp).toDate(),
+      imageUrl: map['imageUrl'],
       upvotes: map['upvotes'] ?? 0,
       downvotes: map['downvotes'] ?? 0,
     );
@@ -63,6 +67,7 @@ class Report {
     String? location,
     String? severity,
     DateTime? timestamp,
+    String? imageUrl,
     int? upvotes,
     int? downvotes,
   }) {
@@ -75,6 +80,7 @@ class Report {
       location: location ?? this.location,
       severity: severity ?? this.severity,
       timestamp: timestamp ?? this.timestamp,
+      imageUrl: imageUrl ?? this.imageUrl,
       upvotes: upvotes ?? this.upvotes,
       downvotes: downvotes ?? this.downvotes,
     );

@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -17,7 +19,7 @@ class SubmitAlertView extends StatefulWidget {
 }
 
 class _SubmitAlertViewState extends State<SubmitAlertView> {
-  final _titleController = TextEditingController(); // NEW
+  final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   String _selectedType = 'Construction';
   String _selectedSeverity = 'Medium';
@@ -30,7 +32,7 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
 
   @override
   void dispose() {
-    _titleController.dispose(); // NEW
+    _titleController.dispose();
     _descriptionController.dispose();
     _mapController.dispose();
     super.dispose();
@@ -62,51 +64,69 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
     }
   }
 
- void _submitAlert() async {
-  final currentUser = FirebaseAuth.instance.currentUser;
+  Future<void> _submitAlert() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
 
-  if (currentUser == null) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User not logged in.')),
-      );
+    if (currentUser == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User not logged in.')),
+        );
+      }
+      return;
     }
-    return;
-  }
 
-  final location = _selectedLocation != null
-      ? "${_selectedLocation!.latitude},${_selectedLocation!.longitude}"
-      : "0.0,0.0";
+    String? imageUrl;
+    if (_image != null) {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('report_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      await storageRef.putFile(_image!);
+      imageUrl = await storageRef.getDownloadURL();
+    }
 
-  final newReport = Report(
-    userId: currentUser.uid, 
-    title: _titleController.text.trim(),
-    type: _selectedType,
-    description: _descriptionController.text.trim(),
-    location: location,
-    severity: _selectedSeverity,
-  );
+final location = _selectedLocation != null
+    ? "${_selectedLocation!.latitude},${_selectedLocation!.longitude}"
+    : "0.0,0.0";
 
-  await Provider.of<ReportProvider>(context, listen: false).addReport(newReport);
 
-  if (context.mounted) {
-    // ignore: use_build_context_synchronously
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Report submitted successfully!')),
+    final newReport = Report(
+      userId: currentUser.uid,
+      title: _titleController.text.trim(),
+      type: _selectedType,
+      description: _descriptionController.text.trim(),
+      location: location,
+      severity: _selectedSeverity,
+      imageUrl: imageUrl,
     );
-    // ignore: use_build_context_synchronously
-    Navigator.pop(context);
-  }
 
-  _titleController.clear();
-  _descriptionController.clear();
-  setState(() {
-    _selectedType = 'Construction';
-    _selectedSeverity = 'Medium';
-    _image = null;
+
+  final reportsRef = FirebaseFirestore.instance.collection('reports');
+  final docRef = await reportsRef.add(newReport.toMap());
+
+  final userDoc = FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+  await userDoc.update({
+    'reportIds': FieldValue.arrayUnion([docRef.id])
   });
-}
 
+
+    if (context.mounted) {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Report submitted successfully!')),
+      );
+      // ignore: use_build_context_synchronously
+      Navigator.pop(context);
+    }
+
+    _titleController.clear();
+    _descriptionController.clear();
+    setState(() {
+      _selectedType = 'Construction';
+      _selectedSeverity = 'Medium';
+      _image = null;
+    });
+  }
 
   Widget _buildZoomControls() {
     return Positioned(
@@ -182,14 +202,13 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
               padding: const EdgeInsets.all(16),
               children: [
                 TextField(
-                  controller: _titleController, // NEW
+                  controller: _titleController,
                   decoration: const InputDecoration(
                     labelText: 'Title',
                     border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),
-
                 DropdownButtonFormField<String>(
                   value: _selectedType,
                   items: ['Construction', 'Hazard']
@@ -199,7 +218,6 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
                   decoration: const InputDecoration(labelText: 'Type'),
                 ),
                 const SizedBox(height: 12),
-
                 DropdownButtonFormField<String>(
                   value: _selectedSeverity,
                   items: ['Low', 'Medium', 'High']
@@ -209,7 +227,6 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
                   decoration: const InputDecoration(labelText: 'Severity'),
                 ),
                 const SizedBox(height: 12),
-
                 TextField(
                   controller: _descriptionController,
                   decoration: const InputDecoration(
@@ -219,7 +236,6 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
                   maxLines: 3,
                 ),
                 const SizedBox(height: 20),
-
                 Center(
                   child: Column(
                     children: [
@@ -239,7 +255,6 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
                 Container(
                   height: 200,
                   decoration: BoxDecoration(
@@ -247,6 +262,7 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
                     boxShadow: [
                       BoxShadow(
                         blurRadius: 5,
+                        // ignore: deprecated_member_use
                         color: Colors.black.withOpacity(0.1),
                       )
                     ],
@@ -259,8 +275,7 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
                         options: MapOptions(
                           initialCenter: _selectedLocation!,
                           initialZoom: _currentZoom,
-                          onTap: (_, point) =>
-                              setState(() => _selectedLocation = point),
+                          onTap: (_, point) => setState(() => _selectedLocation = point),
                           minZoom: _minZoom,
                           maxZoom: _maxZoom,
                         ),
@@ -277,8 +292,7 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
                                 point: _selectedLocation!,
                                 width: 40,
                                 height: 40,
-                                child: const Icon(Icons.location_pin,
-                                    color: Colors.blue, size: 40),
+                                child: const Icon(Icons.location_pin, color: Colors.blue, size: 40),
                               )
                             ],
                           )
@@ -289,7 +303,6 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
                 FilledButton(
                   onPressed: _submitAlert,
                   style: FilledButton.styleFrom(

@@ -64,20 +64,6 @@ void main() {
     expect(find.byType(MapView), findsOneWidget);
   });
 
-  testWidgets('A successful Login button navigates to Mapview', (WidgetTester tester) async {
-    await tester.pumpWidget(createWidgetUnderTest(const LoginScreen()));
-
-    // Enter text in the text fields
-    await tester.enterText(find.byKey(const Key('emailField')), 'testing@gamil.com'); 
-    await tester.enterText(find.byKey(const Key('nameField')), 'Darrick');
-
-    // Tap the login button
-    await tester.tap(find.byKey(const Key('loginButton')));
-    await tester.pumpAndSettle();
-
-    // Verify that the MapView is displayed
-    expect(find.byType(MapView), findsOneWidget);
-  });
 
   testWidgets('Repeated tab switching works correctly', (WidgetTester tester) async {
     await tester.pumpWidget(createWidgetUnderTest(const MyHomePage(

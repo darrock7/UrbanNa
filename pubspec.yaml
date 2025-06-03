@@ -61,6 +61,7 @@ dev_dependencies:
   
   # For firebase testing
   fake_cloud_firestore: ^3.1.0
+  firebase_auth_mocks: ^0.14.2
   # mockito: ^5.4.2
   # build_runner: ^2.4.7
 
