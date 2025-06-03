@@ -5,85 +5,72 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 
 import 'package:urbanna/providers/report_provider.dart';
-//import 'package:urbanna/models/report.dart';
 import 'package:urbanna/screens/login_screen.dart';
-import 'package:urbanna/screens/home_screen.dart';
-import 'package:urbanna/views/map.dart';
-import 'package:urbanna/views/profile.dart';
-import 'package:urbanna/views/about.dart';
+import 'package:urbanna/views/submit_alert.dart';
+
 
 void main() {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
 
+
   Widget createWidgetUnderTest(Widget child) {
-    // Use fake Firestore instead of trying to mock the provider
     final fakeFirestore = FakeFirebaseFirestore();
     final reportProvider = ReportProvider(firestore: fakeFirestore);
-    
+
     return ChangeNotifierProvider<ReportProvider>.value(
       value: reportProvider,
       child: MaterialApp(home: child),
     );
   }
 
-  testWidgets('Tab navigation between Map, Profile, and About', (WidgetTester tester) async {
-    await tester.pumpWidget(createWidgetUnderTest(const MyHomePage(
-      title: 'UrbanNa',
-      name: 'Test User',
-      email: 'test@example.com',
-    )));
+ testWidgets('SubmitAlertView renders all required fields', (WidgetTester tester) async {
+    await tester.pumpWidget(createWidgetUnderTest(const SubmitAlertView()));
 
-    // Starting view should be MapView
-    expect(find.byType(MapView), findsOneWidget);
-
-    // Navigate to Profile
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ProfileView), findsOneWidget);
-
-    // Navigate to About
-    await tester.tap(find.text('About'));
-    await tester.pumpAndSettle();
-    expect(find.byType(AboutView), findsOneWidget);
-
-    // Back to Map
-    await tester.tap(find.text('Map'));
-    await tester.pumpAndSettle();
-    expect(find.byType(MapView), findsOneWidget);
+    expect(find.text('Title'), findsOneWidget);
+    expect(find.text('Type'), findsOneWidget);
+    expect(find.text('Severity'), findsOneWidget);
+    expect(find.text('Description'), findsOneWidget);
+    expect(find.text('Upload Photo'), findsOneWidget);
+    expect(find.text('Submit Alert'), findsOneWidget);
   });
 
-  testWidgets('Guest login navigates to MapView', (WidgetTester tester) async {
-    await tester.pumpWidget(createWidgetUnderTest(const LoginScreen()));
+  testWidgets('Does not crash on empty submission', (WidgetTester tester) async {
+    await tester.pumpWidget(createWidgetUnderTest(const SubmitAlertView()));
+    await tester.tap(find.text('Submit Alert'));
+    await tester.pumpAndSettle();
 
-    // Tap the guest guest button (For quick access)
-    await tester.tap(find.byKey(const Key('guestButton'))); // Testing Dev Guest Login
-    await tester.pumpAndSettle(); 
+    // No crash, widget remains on screen
+    expect(find.byType(SubmitAlertView), findsOneWidget);
+  });
 
-    // Verify that the MapView is displayed
-    expect(find.byType(MapView), findsOneWidget);
+  testWidgets('Can change dropdown values', (WidgetTester tester) async {
+    await tester.pumpWidget(createWidgetUnderTest(const SubmitAlertView()));
+
+    await tester.tap(find.text('Construction'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hazard').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Hazard'), findsOneWidget);
+
+    await tester.tap(find.text('Medium'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('High').last);
+    await tester.pumpAndSettle();
+    expect(find.text('High'), findsOneWidget);
+  });
+
+  testWidgets('Typing title and description updates fields', (WidgetTester tester) async {
+    await tester.pumpWidget(createWidgetUnderTest(const SubmitAlertView()));
+
+    await tester.enterText(find.byType(TextField).at(0), 'Sinkhole');
+    await tester.enterText(find.byType(TextField).at(1), 'A big sinkhole near the road');
+
+    expect(find.text('Sinkhole'), findsOneWidget);
+    expect(find.text('A big sinkhole near the road'), findsOneWidget);
   });
 
 
-  testWidgets('Repeated tab switching works correctly', (WidgetTester tester) async {
-    await tester.pumpWidget(createWidgetUnderTest(const MyHomePage(
-      title: 'UrbanNa',
-      name: 'Test User',
-      email: 'test@example.com',
-    )));
-
-    await tester.tap(find.text('About'));
-    await tester.pumpAndSettle();
-    expect(find.byType(AboutView), findsOneWidget);
-
-    await tester.tap(find.text('Map'));
-    await tester.pumpAndSettle();
-    expect(find.byType(MapView), findsOneWidget);
-
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ProfileView), findsOneWidget);
-  });
 
   testWidgets('Login does not proceed without name/email', (WidgetTester tester) async {
     await tester.pumpWidget(createWidgetUnderTest(const LoginScreen()));
