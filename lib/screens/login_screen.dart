@@ -86,6 +86,7 @@ Widget build(BuildContext context) {
         Positioned.fill(
           child: ColorFiltered(
             colorFilter: ColorFilter.mode(
+              // ignore: deprecated_member_use
               Colors.black.withOpacity(0.3),
               BlendMode.darken,
             ),
