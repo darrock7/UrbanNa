@@ -3,10 +3,11 @@ import 'package:http/http.dart' as http;
 
 class EmailVerifier {
   static final List<String> _apiKeys = [
-    'api',
-    'api2',
-    'API_KEY_3',
-  ];
+    '40741c25a6544b8695eae23a89203c5c',
+    '97930f6809874ab39aca1121108ae19e',
+    '7602fc665db44df7a9c5ec87a3094888',
+  ]; 
+
 
   static int _currKeyIndex = 0;
   static int _numCalls = 0;
