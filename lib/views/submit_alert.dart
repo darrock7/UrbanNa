@@ -21,6 +21,7 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
   final _descriptionController = TextEditingController();
   String _selectedType = 'Construction';
   String _selectedSeverity = 'Medium';
+  String? _uploadedImageUrl;
   File? _image;
   LatLng? _selectedLocation;
   final MapController _mapController = MapController();
@@ -54,39 +55,82 @@ class _SubmitAlertViewState extends State<SubmitAlertView> {
     } catch (_) {}
   }
 
+
+
+
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.camera);
-    if (picked != null) {
-      setState(() => _image = File(picked.path));
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedImage = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedImage != null) {
+      final file = File(pickedImage.path);
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+
+      if (uid != null) {
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('report_images/$uid-${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+        try {
+          print('Picked image path: ${file.path}'); 
+          final uploadTask = ref.putFile(file);
+          final snapshot = await uploadTask.whenComplete(() => null);
+
+          if (!mounted) return;
+
+          if (snapshot.state == TaskState.success) {
+            final url = await ref.getDownloadURL();
+
+            if (!mounted) return;
+
+            setState(() {
+              _image = file;
+              _uploadedImageUrl = url;
+            });
+          } else {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Image upload failed.')),
+            );
+          }
+        } catch (e) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload error: ${e.toString()}')),
+          );
+        }
+      }
     }
   }
+
+
+
+
 
   Future<void> _submitAlert() async {
     final currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser == null) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User not logged in.')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not logged in.')),
+      );
       return;
     }
 
-    String? imageUrl;
-    if (_image != null) {
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('report_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
-      await storageRef.putFile(_image!);
-      imageUrl = await storageRef.getDownloadURL();
+    final imageUrl = _uploadedImageUrl;
+
+    if (imageUrl == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please upload an image before submitting.')),
+      );
+      return;
     }
 
-final location = _selectedLocation != null
-    ? "${_selectedLocation!.latitude},${_selectedLocation!.longitude}"
-    : "0.0,0.0";
-
+    final location = _selectedLocation != null
+        ? "\${_selectedLocation!.latitude},\${_selectedLocation!.longitude}"
+        : "0.0,0.0";
 
     final newReport = Report(
       userId: currentUser.uid,
@@ -98,24 +142,19 @@ final location = _selectedLocation != null
       imageUrl: imageUrl,
     );
 
+    final reportsRef = FirebaseFirestore.instance.collection('reports');
+    final docRef = await reportsRef.add(newReport.toMap());
 
-  final reportsRef = FirebaseFirestore.instance.collection('reports');
-  final docRef = await reportsRef.add(newReport.toMap());
+    final userDoc = FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+    await userDoc.update({
+      'reportIds': FieldValue.arrayUnion([docRef.id])
+    });
 
-  final userDoc = FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
-  await userDoc.update({
-    'reportIds': FieldValue.arrayUnion([docRef.id])
-  });
-
-
-    if (context.mounted) {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report submitted successfully!')),
-      );
-      // ignore: use_build_context_synchronously
-      Navigator.pop(context);
-    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Report submitted successfully!')),
+    );
+    Navigator.pop(context);
 
     _titleController.clear();
     _descriptionController.clear();
@@ -123,8 +162,10 @@ final location = _selectedLocation != null
       _selectedType = 'Construction';
       _selectedSeverity = 'Medium';
       _image = null;
+      _uploadedImageUrl = null;
     });
   }
+
 
   Widget _buildZoomControls() {
     return Positioned(
