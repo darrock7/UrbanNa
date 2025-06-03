@@ -18,6 +18,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  bool _obscurePassword = true;
+
   void _login() async {
     if (_formKey.currentState!.validate()) {
       final email = _emailController.text.trim();
@@ -134,9 +136,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextFormField(
                         key: const Key('passwordField'),
                         controller: _passwordController,
-                        obscureText: true,
+                        obscureText: _obscurePassword,
                         textInputAction: TextInputAction.done,
-                        decoration: _inputDecoration('Password'),
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                         validator: (value) => value == null || value.length < 6
                             ? 'Password must be at least 6 characters'
                             : null,
