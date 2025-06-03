@@ -18,7 +18,8 @@ void main() {
     test('should add report to Firestore successfully', () async {
 
       final report = Report(
-        category: 'Safety',
+        userId: '123',
+        title: 'Safety',
         type: 'Pothole',
         description: 'Large pothole on Main Street',
         location: 'Main Street',
@@ -33,7 +34,7 @@ void main() {
       expect(collection.docs.length, equals(1));
       
       final addedReport = Report.fromMap(collection.docs.first.data(), collection.docs.first.id);
-      expect(addedReport.category, equals('Safety'));
+      expect(addedReport.title, equals('Safety'));
       expect(addedReport.type, equals('Pothole'));
       expect(addedReport.description, equals('Large pothole on Main Street'));
     });
@@ -112,7 +113,8 @@ void main() {
       });
 
       final report = Report(
-        category: 'Environment',
+        userId: '145',
+        title: 'Environment',
         type: 'Litter',
         description: 'Trash on sidewalk',
         location: 'Park Avenue',

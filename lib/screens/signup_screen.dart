@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:urbanna/screens/home_screen.dart';
 import 'package:urbanna/screens/login_screen.dart';
@@ -19,23 +21,57 @@ class _SignupScreen extends State<SignupScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  void _createAccount() {
-    if (_formKey.currentState!.validate()) {
-      final name = _nameController.text.trim();
-      final email = _emailController.text.trim();
-      
+void _createAccount() async {
+  if (_formKey.currentState!.validate()) {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    try {
+      // 1. Create account in Firebase Auth
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+
+      final userId = userCredential.user!.uid;
+
+
+      await FirebaseFirestore.instance.collection('users').doc(userId).set({
+        'name': name,
+        'email': email,
+        'profilePictureUrl': '', 
+        'reportIds': [],
+      });
       Navigator.pushReplacement(
+        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
           builder: (_) => MyHomePage(
-            title: 'UrbanNa', 
-            name: name, 
+            title: 'UrbanNa',
+            name: name,
             email: email,
           ),
         ),
       );
-    }
+      } on FirebaseAuthException catch (e) {
+        String errorMessage = 'An error occurred';
+        if (e.code == 'email-already-in-use') {
+          errorMessage = 'Email already being used';
+        } else if (e.code == 'weak-password') {
+          errorMessage = 'Password is not strong enough';
+        } else if (e.code == 'invalid-email') {
+          errorMessage = 'Invalid email format';
+        } else if (e.code == 'network-request-failed') {
+          errorMessage = 'Unable to connect check you internet.';
+        } else if (e.code == 'too-many-requests') {
+          errorMessage = 'Too many tries have been attempted, wait a bit before proceeding.';
+        }
+
+        debugPrint('Signup error: ${e.code} - ${e.message}');
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage)));
+      }
   }
+}
 
   void _goBackToLogin() {
     Navigator.pushReplacement(

@@ -90,4 +90,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'urbanna-515b0.firebasestorage.app',
     measurementId: 'G-NRJY3V5N4Y',
   );
+
 }

@@ -30,22 +30,23 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.8
   flutter_map: ^8.1.1
   latlong2: ^0.9.0
-  http: ^1.2.2 # or latest from https://pub.dev/packages/http
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
-  image_picker: ^1.0.4 # or latest from https://pub.dev/packages/image_picker
-  # http: ^1.0.0
-  sqflite: ^2.0.0 
-  provider: ^6.0.5 # or latest from https://pub.dev/packages/provider
-  path_provider: ^2.1.1 # or latest from https://pub.dev/packages/path_provider
+  http: ^1.2.2
+  image_picker: ^1.0.4
+  sqflite: ^2.0.0
+  provider: ^6.0.5
+  path_provider: ^2.1.1
   geolocator: ^14.0.0
   sqflite_common_ffi: ^2.3.0
-  firebase_core: ^2.24.0
-  cloud_firestore: ^4.15.0
+
+  firebase_core: ^3.13.0
+  firebase_auth: ^5.5.4
+  cloud_firestore: ^5.6.8
+  firebase_storage: ^12.0.0
+
+  js: ^0.7.2
   
 dev_dependencies:
   flutter_test:
@@ -56,10 +57,10 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   
   # For firebase testing
-  fake_cloud_firestore: ^2.4.2
+  fake_cloud_firestore: ^3.1.0
   # mockito: ^5.4.2
   # build_runner: ^2.4.7
 
